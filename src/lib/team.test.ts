@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { GUEST, type Tier, type Trainer } from './tiers'
-import { teamSlots, type Team } from './team'
+import { teamNameError, teamSlots, type Team } from './team'
 
 const trainer = (tier: Tier): Trainer =>
   tier === 'guest' ? GUEST : { id: `t-${tier}`, handle: tier, tier }
@@ -41,5 +41,21 @@ describe('teamSlots() —— 降级后的可写窗口', () => {
     const slots = teamSlots(trainer('registered'), teams(5))
     expect(slots).toHaveLength(5)
     expect(slots[4].team.name).toBe('队伍 5')
+  })
+})
+
+describe('teamNameError() —— 队伍名校验（新建与重命名共用）', () => {
+  it('空串 / 纯空白 → 报错', () => {
+    expect(teamNameError('')).not.toBeNull()
+    expect(teamNameError('   ')).not.toBeNull()
+  })
+
+  it('超过 30 字 → 报错', () => {
+    expect(teamNameError('x'.repeat(31))).not.toBeNull()
+  })
+
+  it('合法名 → null', () => {
+    expect(teamNameError('我的队伍')).toBeNull()
+    expect(teamNameError('x'.repeat(30))).toBeNull()
   })
 })

@@ -1,3 +1,4 @@
+import { useForm } from '@tanstack/react-form'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import {
   AlertTriangleIcon,
@@ -17,6 +18,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -29,7 +39,12 @@ import { Separator } from '@/components/ui/separator'
 import { DEX } from '@/data/dex'
 import { cnName } from '@/data/zh-names'
 import { can } from '@/lib/capabilities'
-import { MAX_MEMBERS, teamSlots, type Team } from '@/lib/team'
+import {
+  MAX_MEMBERS,
+  teamNameError,
+  teamSlots,
+  type Team,
+} from '@/lib/team'
 import { TIER_LABEL } from '@/lib/tiers'
 import {
   addMember,
@@ -52,7 +67,6 @@ function Teams() {
   const { teams } = Route.useLoaderData()
   const router = useRouter()
 
-  const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -89,27 +103,7 @@ function Teams() {
           </p>
         </div>
 
-        <form
-          className="flex gap-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (!name.trim()) return
-            run(async () => {
-              await createTeam({ data: name.trim() })
-              setName('')
-            })
-          }}
-        >
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="新队伍名称"
-            className="w-44"
-          />
-          <Button type="submit" disabled={busy || !quota.allowed}>
-            <PlusIcon /> 新建
-          </Button>
-        </form>
+        <CreateTeamDialog disabled={busy || !quota.allowed} />
       </div>
 
       {!quota.allowed && quota.reason === 'quota' && (
@@ -135,7 +129,7 @@ function Teams() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">还没有队伍</CardTitle>
-            <CardDescription>在上面输个名字，点「新建」。</CardDescription>
+            <CardDescription>点上面的「新建」，创建第一支队伍。</CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -155,6 +149,173 @@ function Teams() {
   )
 }
 
+/**
+ * 「新建队伍」弹窗 —— 名字 + 初始成员（0–6 只）。
+ *
+ * 用 TanStack Form 管理两个字段：`name`（字符串）和 `speciesIds`（数组）。
+ * 名字校验走 `teamNameError()`，和服务端强制是同一个函数。
+ */
+function CreateTeamDialog({ disabled }: { disabled: boolean }) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const form = useForm({
+    defaultValues: { name: '', speciesIds: [] as number[] },
+    onSubmit: async ({ value }) => {
+      setError(null)
+      try {
+        await createTeam({
+          data: {
+            name: value.name,
+            // 未选择的占位行是 0，过滤掉再提交
+            speciesIds: value.speciesIds.filter((id) => id > 0),
+          },
+        })
+        await router.invalidate()
+        setOpen(false)
+        form.reset()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e))
+      }
+    },
+  })
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button disabled={disabled} />}>
+        <PlusIcon /> 新建
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>新建队伍</DialogTitle>
+          <DialogDescription>
+            起个名字，可选先放进几只宝可梦 —— 之后还能再加。
+          </DialogDescription>
+        </DialogHeader>
+
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            void form.handleSubmit()
+          }}
+        >
+          <form.Field
+            name="name"
+            validators={{
+              onChange: ({ value }) => teamNameError(value) ?? undefined,
+            }}
+          >
+            {(field) => (
+              <div className="space-y-1">
+                <label className="text-sm font-medium">队伍名</label>
+                <Input
+                  autoFocus
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="新队伍名称"
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <p className="text-xs text-destructive">
+                    {field.state.meta.errors[0]}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="speciesIds">
+            {(field) => (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">
+                    初始成员（{field.state.value.length}/{MAX_MEMBERS}）
+                  </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={field.state.value.length >= MAX_MEMBERS}
+                    onClick={() => field.pushValue(0)}
+                  >
+                    <PlusIcon /> 添加
+                  </Button>
+                </div>
+
+                {field.state.value.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    留空就是建一支空队，之后再逐个加。
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {field.state.value.map((_, i) => (
+                      <form.Field key={i} name={`speciesIds[${i}]`}>
+                        {(sub) => (
+                          <div className="flex gap-2">
+                            <Select
+                              value={sub.state.value ? String(sub.state.value) : ''}
+                              onValueChange={(v) => sub.handleChange(Number(v))}
+                            >
+                              <SelectTrigger className="flex-1" size="sm">
+                                <SelectValue placeholder="选择宝可梦" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DEX.map((d) => (
+                                  <SelectItem key={d.id} value={String(d.id)}>
+                                    #{String(d.id).padStart(3, '0')}{' '}
+                                    {cnName(d.id, d.name)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="移除这一位"
+                              onClick={() => field.removeValue(i)}
+                            >
+                              <TrashIcon />
+                            </Button>
+                          </div>
+                        )}
+                      </form.Field>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </form.Field>
+
+          {error && (
+            <Alert status="error">
+              <AlertTriangleIcon />
+              <AlertTitle>服务端拒绝了这次操作</AlertTitle>
+              <AlertDescription className="font-mono text-xs">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <DialogFooter>
+            <form.Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
+            >
+              {([canSubmit, isSubmitting]) => (
+                <Button type="submit" disabled={!canSubmit || isSubmitting}>
+                  {isSubmitting ? '创建中…' : '创建队伍'}
+                </Button>
+              )}
+            </form.Subscribe>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function TeamCard({
   team,
   writable,
@@ -167,32 +328,17 @@ function TeamCard({
   onRun: (fn: () => Promise<unknown>) => void
 }) {
   const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(team.name)
 
   return (
     <Card className={writable ? undefined : 'opacity-70'}>
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           {editing ? (
-            <form
-              className="flex flex-1 gap-2"
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (!draft.trim()) return
-                setEditing(false)
-                onRun(() => renameTeam({ data: { teamId: team.id, name: draft.trim() } }))
-              }}
-            >
-              <Input
-                autoFocus
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                className="h-8"
-              />
-              <Button type="submit" size="sm">
-                保存
-              </Button>
-            </form>
+            <RenameTeamForm
+              team={team}
+              onDone={() => setEditing(false)}
+              onRun={onRun}
+            />
           ) : (
             <CardTitle className="text-lg">{team.name}</CardTitle>
           )}
@@ -204,10 +350,7 @@ function TeamCard({
                   variant="ghost"
                   size="icon-sm"
                   aria-label="重命名"
-                  onClick={() => {
-                    setDraft(team.name)
-                    setEditing((v) => !v)
-                  }}
+                  onClick={() => setEditing((v) => !v)}
                 >
                   ✏️
                 </Button>
@@ -281,6 +424,74 @@ function TeamCard({
         )}
       </CardContent>
     </Card>
+  )
+}
+
+/**
+ * 重命名内联表单 —— 也迁到 TanStack Form，和新建共用同一套名字校验。
+ * `onDone` 在提交时立即关闭编辑态（沿用原来的「先关再调」的乐观行为），
+ * 失败由父级的 `run()` 把错误铺到顶部 Alert。
+ */
+function RenameTeamForm({
+  team,
+  onDone,
+  onRun,
+}: {
+  team: Team
+  onDone: () => void
+  onRun: (fn: () => Promise<unknown>) => void
+}) {
+  const form = useForm({
+    defaultValues: { name: team.name },
+    onSubmit: async ({ value }) => {
+      onDone()
+      await onRun(() =>
+        renameTeam({ data: { teamId: team.id, name: value.name } }),
+      )
+    },
+  })
+
+  return (
+    <form
+      className="flex flex-1 items-start gap-2"
+      onSubmit={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        void form.handleSubmit()
+      }}
+    >
+      <form.Field
+        name="name"
+        validators={{
+          onChange: ({ value }) => teamNameError(value) ?? undefined,
+        }}
+      >
+        {(field) => (
+          <div className="flex-1">
+            <Input
+              autoFocus
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              className="h-8"
+            />
+            {field.state.meta.errors.length > 0 && (
+              <p className="mt-1 text-xs text-destructive">
+                {field.state.meta.errors[0]}
+              </p>
+            )}
+          </div>
+        )}
+      </form.Field>
+      <form.Subscribe
+        selector={(state) => [state.canSubmit, state.isSubmitting]}
+      >
+        {([canSubmit, isSubmitting]) => (
+          <Button type="submit" size="sm" disabled={!canSubmit || isSubmitting}>
+            保存
+          </Button>
+        )}
+      </form.Subscribe>
+    </form>
   )
 }
 

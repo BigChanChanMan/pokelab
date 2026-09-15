@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 
 import { can } from '@/lib/capabilities'
-import { teamSlots, type EVs, type Team } from '@/lib/team'
+import { teamSlots, teamNameError, type EVs, type Team } from '@/lib/team'
 import { diagnose, type Diagnosis } from '@/lib/diagnose'
 import { requireCapability } from './middleware'
 import * as store from './team-store'
@@ -56,8 +56,8 @@ export const listTeams = createServerFn({ method: 'GET' })
 
 export const createTeam = createServerFn({ method: 'POST' })
   .middleware([requireCapability('team.create')])
-  .validator((name: string) => name)
-  .handler(async ({ context, data: name }): Promise<Team> => {
+  .validator((input: { name: string; speciesIds: number[] }) => input)
+  .handler(async ({ context, data }): Promise<Team> => {
     const id = trainerId(context.trainer)
     const used = store.listTeams(id).length
 
@@ -65,7 +65,11 @@ export const createTeam = createServerFn({ method: 'POST' })
     const verdict = can(context.trainer, 'team.create', { used })
     if (!verdict.allowed) throw new Error('FORBIDDEN:team.create:quota')
 
-    return store.createTeam(id, name)
+    // 名字校验 —— 和前端 TanStack Form 用的是同一个 teamNameError()。
+    const nameError = teamNameError(data.name)
+    if (nameError) throw new Error(`INVALID_NAME:${nameError}`)
+
+    return store.createTeam(id, data.name.trim(), data.speciesIds)
   })
 
 export const renameTeam = createServerFn({ method: 'POST' })
@@ -73,7 +77,13 @@ export const renameTeam = createServerFn({ method: 'POST' })
   .validator((input: { teamId: string; name: string }) => input)
   .handler(async ({ context, data }): Promise<Team> => {
     requireWritable(context.trainer, data.teamId)
-    return store.renameTeam(trainerId(context.trainer), data.teamId, data.name)
+    const nameError = teamNameError(data.name)
+    if (nameError) throw new Error(`INVALID_NAME:${nameError}`)
+    return store.renameTeam(
+      trainerId(context.trainer),
+      data.teamId,
+      data.name.trim(),
+    )
   })
 
 export const deleteTeam = createServerFn({ method: 'POST' })

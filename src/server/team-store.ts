@@ -31,13 +31,35 @@ export function getTeam(trainerId: string, teamId: string): Team | undefined {
   return listTeams(trainerId).find((t) => t.id === teamId)
 }
 
-export function createTeam(trainerId: string, name: string): Team {
+export function createTeam(
+  trainerId: string,
+  name: string,
+  speciesIds: number[],
+): Team {
+  // 先做完全部校验、再写入。内存桩里没有事务，这样保证「要么整队建好，要么一步不写」，
+  // 不会留下「队建了但成员没加全」的半成品。
+  if (speciesIds.length > MAX_MEMBERS) throw new Error('TEAM_FULL')
+  for (const id of speciesIds) {
+    if (!DEX.some((d) => d.id === id)) throw new Error(`UNKNOWN_SPECIES:${id}`)
+  }
+
   const team: Team = {
     id: nextId('team'),
     trainerId,
     name,
     createdAt: createdAt(),
-    members: [],
+    // 初始成员按传入顺序占据 1..N 号槽位 —— 和 addMember 的自动找空位一致
+    members: speciesIds.map((speciesId, i) => ({
+      id: nextId('mem'),
+      speciesId,
+      ability: null,
+      item: null,
+      nature: null,
+      teraType: null,
+      evs: null,
+      moves: [],
+      position: i + 1,
+    })),
   }
   teams.set(trainerId, [...listTeams(trainerId), team])
   return team

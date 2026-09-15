@@ -43,6 +43,23 @@ export interface Team {
 
 export const MAX_MEMBERS = 6
 
+/**
+ * 队伍名的一条领域规则：非空 + 长度上限。
+ *
+ * 新建和重命名共用同一条规则（服务端强制，前端用同一函数做校验）。
+ * 长度上限唯一的作用是不让「本就被截断展示」的名字无边界膨胀；
+ * 没有做唯一性 —— 重名是允许的，那是另一个还没被要求的约束。
+ */
+export const TEAM_NAME_MAX = 30
+
+/** 返回错误信息，合法返回 null —— 前端校验和服务端强制都用它。 */
+export function teamNameError(name: string): string | null {
+  const trimmed = name.trim()
+  if (trimmed.length === 0) return '队伍名不能为空'
+  if (trimmed.length > TEAM_NAME_MAX) return `队伍名最多 ${TEAM_NAME_MAX} 字`
+  return null
+}
+
 export interface TeamSlot {
   team: Team
   /**
