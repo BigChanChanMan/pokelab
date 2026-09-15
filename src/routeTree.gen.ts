@@ -9,51 +9,429 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConsoleRouteImport } from './routes/_console'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ConsoleBattlesRouteImport } from './routes/_console/battles'
+import { Route as ConsoleCalcRouteImport } from './routes/_console/calc'
+import { Route as ConsoleDashboardRouteImport } from './routes/_console/dashboard'
+import { Route as ConsoleDiagnoseRouteImport } from './routes/_console/diagnose'
+import { Route as ConsoleExportRouteImport } from './routes/_console/export'
+import { Route as ConsoleMetaRouteImport } from './routes/_console/meta'
+import { Route as ConsoleSettingsRouteImport } from './routes/_console/settings'
+import { Route as ConsoleTeamsRouteImport } from './routes/_console/teams'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicGuideRouteImport } from './routes/_public/guide'
+import { Route as PublicLabRouteImport } from './routes/_public/lab'
+import { Route as PublicMatchupRouteImport } from './routes/_public/matchup'
+import { Route as PublicDexIndexRouteImport } from './routes/_public/dex/index'
+import { Route as PublicDexIdRouteImport } from './routes/_public/dex/$id'
 
-const IndexRoute = IndexRouteImport.update({
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: '/_console',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsoleBattlesRoute = ConsoleBattlesRouteImport.update({
+  id: '/battles',
+  path: '/battles',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleCalcRoute = ConsoleCalcRouteImport.update({
+  id: '/calc',
+  path: '/calc',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleDashboardRoute = ConsoleDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleDiagnoseRoute = ConsoleDiagnoseRouteImport.update({
+  id: '/diagnose',
+  path: '/diagnose',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleExportRoute = ConsoleExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleMetaRoute = ConsoleMetaRouteImport.update({
+  id: '/meta',
+  path: '/meta',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleSettingsRoute = ConsoleSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleTeamsRoute = ConsoleTeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicGuideRoute = PublicGuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicLabRoute = PublicLabRouteImport.update({
+  id: '/lab',
+  path: '/lab',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicMatchupRoute = PublicMatchupRouteImport.update({
+  id: '/matchup',
+  path: '/matchup',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicDexIndexRoute = PublicDexIndexRouteImport.update({
+  id: '/dex/',
+  path: '/dex/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicDexIdRoute = PublicDexIdRouteImport.update({
+  id: '/dex/$id',
+  path: '/dex/$id',
+  getParentRoute: () => PublicRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof PublicIndexRoute
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/battles': typeof ConsoleBattlesRoute
+  '/calc': typeof ConsoleCalcRoute
+  '/dashboard': typeof ConsoleDashboardRoute
+  '/diagnose': typeof ConsoleDiagnoseRoute
+  '/export': typeof ConsoleExportRoute
+  '/meta': typeof ConsoleMetaRoute
+  '/settings': typeof ConsoleSettingsRoute
+  '/teams': typeof ConsoleTeamsRoute
+  '/guide': typeof PublicGuideRoute
+  '/lab': typeof PublicLabRoute
+  '/matchup': typeof PublicMatchupRoute
+  '/dex/$id': typeof PublicDexIdRoute
+  '/dex/': typeof PublicDexIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof PublicIndexRoute
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/battles': typeof ConsoleBattlesRoute
+  '/calc': typeof ConsoleCalcRoute
+  '/dashboard': typeof ConsoleDashboardRoute
+  '/diagnose': typeof ConsoleDiagnoseRoute
+  '/export': typeof ConsoleExportRoute
+  '/meta': typeof ConsoleMetaRoute
+  '/settings': typeof ConsoleSettingsRoute
+  '/teams': typeof ConsoleTeamsRoute
+  '/guide': typeof PublicGuideRoute
+  '/lab': typeof PublicLabRoute
+  '/matchup': typeof PublicMatchupRoute
+  '/dex/$id': typeof PublicDexIdRoute
+  '/dex': typeof PublicDexIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_console': typeof ConsoleRouteWithChildren
+  '/_public': typeof PublicRouteWithChildren
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/_console/battles': typeof ConsoleBattlesRoute
+  '/_console/calc': typeof ConsoleCalcRoute
+  '/_console/dashboard': typeof ConsoleDashboardRoute
+  '/_console/diagnose': typeof ConsoleDiagnoseRoute
+  '/_console/export': typeof ConsoleExportRoute
+  '/_console/meta': typeof ConsoleMetaRoute
+  '/_console/settings': typeof ConsoleSettingsRoute
+  '/_console/teams': typeof ConsoleTeamsRoute
+  '/_public/guide': typeof PublicGuideRoute
+  '/_public/lab': typeof PublicLabRoute
+  '/_public/matchup': typeof PublicMatchupRoute
+  '/_public/': typeof PublicIndexRoute
+  '/_public/dex/$id': typeof PublicDexIdRoute
+  '/_public/dex/': typeof PublicDexIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/pricing'
+    | '/battles'
+    | '/calc'
+    | '/dashboard'
+    | '/diagnose'
+    | '/export'
+    | '/meta'
+    | '/settings'
+    | '/teams'
+    | '/guide'
+    | '/lab'
+    | '/matchup'
+    | '/dex/$id'
+    | '/dex/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/pricing'
+    | '/battles'
+    | '/calc'
+    | '/dashboard'
+    | '/diagnose'
+    | '/export'
+    | '/meta'
+    | '/settings'
+    | '/teams'
+    | '/guide'
+    | '/lab'
+    | '/matchup'
+    | '/dex/$id'
+    | '/dex'
+  id:
+    | '__root__'
+    | '/_console'
+    | '/_public'
+    | '/login'
+    | '/pricing'
+    | '/_console/battles'
+    | '/_console/calc'
+    | '/_console/dashboard'
+    | '/_console/diagnose'
+    | '/_console/export'
+    | '/_console/meta'
+    | '/_console/settings'
+    | '/_console/teams'
+    | '/_public/guide'
+    | '/_public/lab'
+    | '/_public/matchup'
+    | '/_public/'
+    | '/_public/dex/$id'
+    | '/_public/dex/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  ConsoleRoute: typeof ConsoleRouteWithChildren
+  PublicRoute: typeof PublicRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_console': {
+      id: '/_console'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ConsoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_console/battles': {
+      id: '/_console/battles'
+      path: '/battles'
+      fullPath: '/battles'
+      preLoaderRoute: typeof ConsoleBattlesRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/calc': {
+      id: '/_console/calc'
+      path: '/calc'
+      fullPath: '/calc'
+      preLoaderRoute: typeof ConsoleCalcRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/dashboard': {
+      id: '/_console/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof ConsoleDashboardRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/diagnose': {
+      id: '/_console/diagnose'
+      path: '/diagnose'
+      fullPath: '/diagnose'
+      preLoaderRoute: typeof ConsoleDiagnoseRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/export': {
+      id: '/_console/export'
+      path: '/export'
+      fullPath: '/export'
+      preLoaderRoute: typeof ConsoleExportRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/meta': {
+      id: '/_console/meta'
+      path: '/meta'
+      fullPath: '/meta'
+      preLoaderRoute: typeof ConsoleMetaRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/settings': {
+      id: '/_console/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof ConsoleSettingsRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/teams': {
+      id: '/_console/teams'
+      path: '/teams'
+      fullPath: '/teams'
+      preLoaderRoute: typeof ConsoleTeamsRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_public/': {
+      id: '/_public/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/guide': {
+      id: '/_public/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof PublicGuideRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/lab': {
+      id: '/_public/lab'
+      path: '/lab'
+      fullPath: '/lab'
+      preLoaderRoute: typeof PublicLabRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/matchup': {
+      id: '/_public/matchup'
+      path: '/matchup'
+      fullPath: '/matchup'
+      preLoaderRoute: typeof PublicMatchupRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/dex/': {
+      id: '/_public/dex/'
+      path: '/dex'
+      fullPath: '/dex/'
+      preLoaderRoute: typeof PublicDexIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/dex/$id': {
+      id: '/_public/dex/$id'
+      path: '/dex/$id'
+      fullPath: '/dex/$id'
+      preLoaderRoute: typeof PublicDexIdRouteImport
+      parentRoute: typeof PublicRoute
     }
   }
 }
 
+interface ConsoleRouteChildren {
+  ConsoleBattlesRoute: typeof ConsoleBattlesRoute
+  ConsoleCalcRoute: typeof ConsoleCalcRoute
+  ConsoleDashboardRoute: typeof ConsoleDashboardRoute
+  ConsoleDiagnoseRoute: typeof ConsoleDiagnoseRoute
+  ConsoleExportRoute: typeof ConsoleExportRoute
+  ConsoleMetaRoute: typeof ConsoleMetaRoute
+  ConsoleSettingsRoute: typeof ConsoleSettingsRoute
+  ConsoleTeamsRoute: typeof ConsoleTeamsRoute
+}
+
+const ConsoleRouteChildren: ConsoleRouteChildren = {
+  ConsoleBattlesRoute: ConsoleBattlesRoute,
+  ConsoleCalcRoute: ConsoleCalcRoute,
+  ConsoleDashboardRoute: ConsoleDashboardRoute,
+  ConsoleDiagnoseRoute: ConsoleDiagnoseRoute,
+  ConsoleExportRoute: ConsoleExportRoute,
+  ConsoleMetaRoute: ConsoleMetaRoute,
+  ConsoleSettingsRoute: ConsoleSettingsRoute,
+  ConsoleTeamsRoute: ConsoleTeamsRoute,
+}
+
+const ConsoleRouteWithChildren =
+  ConsoleRoute._addFileChildren(ConsoleRouteChildren)
+
+interface PublicRouteChildren {
+  PublicGuideRoute: typeof PublicGuideRoute
+  PublicLabRoute: typeof PublicLabRoute
+  PublicMatchupRoute: typeof PublicMatchupRoute
+  PublicIndexRoute: typeof PublicIndexRoute
+  PublicDexIdRoute: typeof PublicDexIdRoute
+  PublicDexIndexRoute: typeof PublicDexIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicGuideRoute: PublicGuideRoute,
+  PublicLabRoute: PublicLabRoute,
+  PublicMatchupRoute: PublicMatchupRoute,
+  PublicIndexRoute: PublicIndexRoute,
+  PublicDexIdRoute: PublicDexIdRoute,
+  PublicDexIndexRoute: PublicDexIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  ConsoleRoute: ConsoleRouteWithChildren,
+  PublicRoute: PublicRouteWithChildren,
+  LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
