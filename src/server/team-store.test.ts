@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createTeam, listTeams, __reset } from './team-store'
+import { addMember, createTeam, listTeams, __reset } from './team-store'
 
 beforeEach(() => __reset())
 
@@ -28,5 +28,27 @@ describe('createTeam() —— 带初始成员的原子创建', () => {
       'UNKNOWN_SPECIES:999999',
     )
     expect(listTeams('t1')).toEqual([])
+  })
+
+  it('初始成员里重复物种抛 DUPLICATE_SPECIES，且不留下半成品', () => {
+    expect(() => createTeam('t1', '队伍', [3, 6, 3])).toThrow(
+      'DUPLICATE_SPECIES:3',
+    )
+    expect(listTeams('t1')).toEqual([])
+  })
+})
+
+describe('addMember() —— 领域规则「同一物种最多一只」', () => {
+  it('加已在队里的物种抛 DUPLICATE_SPECIES', () => {
+    const team = createTeam('t1', '队伍', [3])
+    expect(() => addMember('t1', team.id, { speciesId: 3 })).toThrow(
+      'DUPLICATE_SPECIES:3',
+    )
+  })
+
+  it('加不同物种正常进入下一个空位', () => {
+    const team = createTeam('t1', '队伍', [3])
+    const member = addMember('t1', team.id, { speciesId: 6 })
+    expect(member?.position).toBe(2)
   })
 })

@@ -39,8 +39,12 @@ export function createTeam(
   // 先做完全部校验、再写入。内存桩里没有事务，这样保证「要么整队建好，要么一步不写」，
   // 不会留下「队建了但成员没加全」的半成品。
   if (speciesIds.length > MAX_MEMBERS) throw new Error('TEAM_FULL')
+  const seen = new Set<number>()
   for (const id of speciesIds) {
     if (!DEX.some((d) => d.id === id)) throw new Error(`UNKNOWN_SPECIES:${id}`)
+    // 领域规则：一支队伍里同一物种最多一只（DESIGN §2）。初始成员内部也去重。
+    if (seen.has(id)) throw new Error(`DUPLICATE_SPECIES:${id}`)
+    seen.add(id)
   }
 
   const team: Team = {
@@ -98,6 +102,10 @@ export function addMember(
   // 图鉴里没有的编号直接拒 —— 存储层不校验「合不合理」，但要挡住脏数据
   if (!DEX.some((d) => d.id === input.speciesId)) {
     throw new Error(`UNKNOWN_SPECIES:${input.speciesId}`)
+  }
+  // 领域规则：一支队伍里同一物种最多一只（DESIGN §2）。
+  if (team.members.some((m) => m.speciesId === input.speciesId)) {
+    throw new Error(`DUPLICATE_SPECIES:${input.speciesId}`)
   }
 
   const used = new Set(team.members.map((m) => m.position))

@@ -55,6 +55,15 @@ import {
   renameTeam,
 } from '@/server/teams'
 
+/**
+ * 图鉴下拉的 value→label 映射。喂给 <Select items>，触发框才能显示名字而不是编号；
+ * 同时作为「已选物种去重」的选项源。
+ */
+const SPECIES_ITEMS = DEX.map((d) => ({
+  value: String(d.id),
+  label: `#${String(d.id).padStart(3, '0')} ${cnName(d.id, d.name)}`,
+}))
+
 export const Route = createFileRoute('/_console/teams')({
   // loader 和组件的取数走同一个服务端函数 —— 服务端强制在这里同样生效，
   // 想绕过 UI 直接构造请求也过不去 requireCapability。
@@ -250,39 +259,48 @@ function CreateTeamDialog({ disabled }: { disabled: boolean }) {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {field.state.value.map((_, i) => (
-                      <form.Field key={i} name={`speciesIds[${i}]`}>
-                        {(sub) => (
-                          <div className="flex gap-2">
-                            <Select
-                              value={sub.state.value ? String(sub.state.value) : ''}
-                              onValueChange={(v) => sub.handleChange(Number(v))}
-                            >
-                              <SelectTrigger className="flex-1" size="sm">
-                                <SelectValue placeholder="选择宝可梦" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {DEX.map((d) => (
-                                  <SelectItem key={d.id} value={String(d.id)}>
-                                    #{String(d.id).padStart(3, '0')}{' '}
-                                    {cnName(d.id, d.name)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label="移除这一位"
-                              onClick={() => field.removeValue(i)}
-                            >
-                              <TrashIcon />
-                            </Button>
-                          </div>
-                        )}
-                      </form.Field>
-                    ))}
+                    {field.state.value.map((_, i) => {
+                      // 领域规则「同一物种最多一只」：这一行的下拉排除其它行已选的物种。
+                      const others = new Set(
+                        field.state.value.filter((v, j) => j !== i && v > 0),
+                      )
+                      const items = SPECIES_ITEMS.filter(
+                        (it) => !others.has(Number(it.value)),
+                      )
+                      return (
+                        <form.Field key={i} name={`speciesIds[${i}]`}>
+                          {(sub) => (
+                            <div className="flex gap-2">
+                              <Select
+                                items={items}
+                                value={sub.state.value ? String(sub.state.value) : ''}
+                                onValueChange={(v) => sub.handleChange(Number(v))}
+                              >
+                                <SelectTrigger className="flex-1" size="sm">
+                                  <SelectValue placeholder="选择宝可梦" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {items.map((it) => (
+                                    <SelectItem key={it.value} value={it.value}>
+                                      {it.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="移除这一位"
+                                onClick={() => field.removeValue(i)}
+                              >
+                                <TrashIcon />
+                              </Button>
+                            </div>
+                          )}
+                        </form.Field>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -419,7 +437,7 @@ function TeamCard({
         {writable && team.members.length < MAX_MEMBERS && (
           <>
             <Separator />
-            <AddMember teamId={team.id} busy={busy} onRun={onRun} />
+            <AddMember team={team} busy={busy} onRun={onRun} />
           </>
         )}
       </CardContent>
@@ -496,26 +514,34 @@ function RenameTeamForm({
 }
 
 function AddMember({
-  teamId,
+  team,
   busy,
   onRun,
 }: {
-  teamId: string
+  team: Team
   busy: boolean
   onRun: (fn: () => Promise<unknown>) => void
 }) {
   const [speciesId, setSpeciesId] = useState<string>('')
 
+  // 领域规则「同一物种最多一只」：下拉排除已在队里的物种。
+  const taken = new Set(team.members.map((m) => m.speciesId))
+  const items = SPECIES_ITEMS.filter((it) => !taken.has(Number(it.value)))
+
   return (
     <div className="flex gap-2">
-      <Select value={speciesId} onValueChange={(v) => setSpeciesId(String(v))}>
+      <Select
+        items={items}
+        value={speciesId}
+        onValueChange={(v) => setSpeciesId(String(v))}
+      >
         <SelectTrigger className="flex-1" size="sm">
           <SelectValue placeholder="选择宝可梦" />
         </SelectTrigger>
         <SelectContent>
-          {DEX.map((d) => (
-            <SelectItem key={d.id} value={String(d.id)}>
-              #{String(d.id).padStart(3, '0')} {cnName(d.id, d.name)}
+          {items.map((it) => (
+            <SelectItem key={it.value} value={it.value}>
+              {it.label}
             </SelectItem>
           ))}
         </SelectContent>
@@ -525,7 +551,7 @@ function AddMember({
         disabled={busy || !speciesId}
         onClick={() =>
           onRun(() =>
-            addMember({ data: { teamId, speciesId: Number(speciesId) } }),
+            addMember({ data: { teamId: team.id, speciesId: Number(speciesId) } }),
           )
         }
       >
