@@ -1,17 +1,185 @@
-
 @import "tailwindcss";
 
-* {
-  box-sizing: border-box;
+/* neobrutalism.com 官方主题变量（installation 页原样） */
+@theme inline {
+  --font-head: var(--font-head);
+  --font-sans: var(--font-sans);
+  --radius: var(--radius);
+
+  --shadow-xs: 1px 1px 0 0 var(--border);
+  --shadow-sm: 2px 2px 0 0 var(--border);
+  --shadow: 3px 3px 0 0 var(--border);
+  --shadow-md: 4px 4px 0 0 var(--border);
+  --shadow-lg: 6px 6px 0 0 var(--border);
+  --shadow-xl: 10px 10px 0 1px var(--border);
+  --shadow-2xl: 16px 16px 0 1px var(--border);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* sidebar.tsx 需要的 token。registry item 既无 cssVars 也无 css，
+     这些类名不映射的话侧边栏配色是未定义的。
+     组件实际用到的是 bg-sidebar / text-sidebar-foreground /
+     border-sidebar-border / bg-sidebar-border / ring-sidebar-ring /
+     text-sidebar-accent-foreground，所以 --color-sidebar 是必须的；
+     其余按官方文档的命名一并给出。 */
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
 }
 
-html,
-body,
-#app {
-  min-height: 100%;
+:root {
+  --radius: 0;
+  --background: #fff7e8;
+  --foreground: #000;
+  --card: #fff;
+  --card-foreground: #000;
+  --primary: #ffdc58;
+  --primary-hover: #ffd12e;
+  --primary-foreground: #000;
+  --secondary: #000;
+  --secondary-hover: #333;
+  --secondary-foreground: #fff;
+  --muted: #efe7d6;
+  --muted-foreground: #6b6355;
+  --accent: #ffe7a3;
+  --accent-foreground: #000;
+  --destructive: #e63946;
+  --destructive-foreground: #fff;
+  --border: #000;
+  --input: #fff;
+  --ring: #000;
+
+  /* 侧边栏。neobrutalism 下与 card 同色，边框沿用统一的黑。
+     变量名沿用官方文档的 --sidebar-background / --sidebar-primary。 */
+  --sidebar-background: var(--card);
+  --sidebar-foreground: var(--card-foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  /* POKÉBRUTAL 扩展：宝可梦属性色板 */
+  --type-fire: #ff6b35;
+  --type-water: #3b8ee0;
+  --type-grass: #4caf50;
+  --type-electric: #f7c948;
+  --type-psychic: #e0509a;
+  --type-ice: #7ad3e0;
+  --type-dragon: #6a4fd6;
+  --type-dark: #4a4238;
+  --type-fairy: #f39ac4;
+  --type-normal: #cfc3a1;
+  --type-fighting: #d1462f;
+  --type-flying: #9bb0e8;
+  --type-poison: #a45db8;
+  --type-ground: #d8b56a;
+  --type-rock: #b0a055;
+  --type-bug: #9cc43a;
+  --type-ghost: #6b5f9e;
+  --type-steel: #a8b6c4;
 }
 
-body {
-  margin: 0;
+.dark {
+  --background: #1a1815;
+  --foreground: #f5f0e6;
+  --card: #262320;
+  --card-foreground: #f5f0e6;
+  --primary: #ffdc58;
+  --primary-hover: #ffd12e;
+  --primary-foreground: #000;
+  --secondary: #3a352f;
+  --secondary-hover: #4a443c;
+  --secondary-foreground: #f5f0e6;
+  --muted: #2e2a24;
+  --muted-foreground: #b3ac9e;
+  --accent: #38342b;
+  --accent-foreground: #f5f0e6;
+  --destructive: #ff6b6b;
+  --destructive-foreground: #1a1815;
+  --border: #000;
+  --input: #262320;
+  --ring: #ffdc58;
+
+  --sidebar-background: var(--card);
+  --sidebar-foreground: var(--card-foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-head), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* Tailwind v4 把 button 的 cursor 改成了 default，这里恢复 pointer */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* 页面背景网格纹理 */
+@utility bg-grid {
+  background-image: linear-gradient(
+      to right,
+      color-mix(in oklab, var(--border) 12%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--border) 12%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 28px 28px;
+}
