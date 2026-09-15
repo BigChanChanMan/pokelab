@@ -113,7 +113,7 @@ export function AppSidebar({ trainer }: { trainer: Trainer }) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link to="/dashboard" />}>
               <span className="grid size-8 shrink-0 place-items-center border-2 border-border bg-primary font-head">
-                🔬
+                ⚡
               </span>
               <span className="font-head text-base leading-none">
                 POKÉ
