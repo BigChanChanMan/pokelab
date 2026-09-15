@@ -1,6 +1,7 @@
 import { createMiddleware } from '@tanstack/react-start'
 
 import { can, type Capability } from '@/lib/capabilities'
+import type { Trainer } from '@/lib/tiers'
 import { getTrainer } from './trainer'
 
 /**
@@ -15,6 +16,20 @@ import { getTrainer } from './trainer'
  *
  * 第 2 处是必须的，第 1 处是可选的。
  */
+
+/**
+ * 强制判定本身。
+ *
+ * 单独抽出来是为了能被测试直接调用 —— 中间件要跑得先有 server function
+ * 上下文，而这个函数就是中间件 `.server()` 里的**全部**逻辑。
+ * 测它就等于测中间件，但不需要起一个请求。
+ */
+export function enforceCapability(trainer: Trainer, cap: Capability): void {
+  const verdict = can(trainer, cap)
+  if (!verdict.allowed) {
+    throw new Error(`FORBIDDEN:${cap}:${verdict.reason}`)
+  }
+}
 
 export const authMiddleware = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
@@ -31,9 +46,6 @@ export const requireCapability = (cap: Capability) =>
   createMiddleware({ type: 'function' })
     .middleware([authMiddleware])
     .server(async ({ next, context }) => {
-      const verdict = can(context.trainer, cap)
-      if (!verdict.allowed) {
-        throw new Error(`FORBIDDEN:${cap}:${verdict.reason}`)
-      }
-      return next({ context: { ...context, verdict } })
+      enforceCapability(context.trainer, cap)
+      return next({ context: { ...context, verdict: can(context.trainer, cap) } })
     })
