@@ -6,7 +6,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "vite dev --port 3001",
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
@@ -25,6 +25,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.46.0",
     "nitro": "3.0.260610-beta",
+    "page-mascot": "^0.1.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.7.0",

@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Mascot } from 'page-mascot'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -43,9 +44,13 @@ function LoginPage() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-4 py-10">
       <div className="text-center">
-        <span className="mx-auto grid size-12 place-items-center border-2 border-border bg-primary font-head text-2xl shadow-md">
-          🔬
-        </span>
+        <Mascot
+          className="mx-auto"
+          directions="/mascots/fox-pixel-directions.webp"
+          reactions="/mascots/fox-pixel-reactions.webp"
+          size={96}
+          label="吉祥物"
+        />
         <h1 className="mt-4 text-3xl font-black tracking-tight">
           POKÉ<span className="bg-primary px-1">LAB</span>
         </h1>

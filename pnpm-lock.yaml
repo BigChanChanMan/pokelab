@@ -41,6 +41,9 @@ importers:
       nitro:
         specifier: 3.0.260610-beta
         version: 3.0.260610-beta(chokidar@5.0.0)(jiti@2.7.0)(vite@8.3.0(@types/node@22.20.2)(jiti@2.7.0))
+      page-mascot:
+        specifier: ^0.1.0
+        version: 0.1.0(react@19.3.0)
       react:
         specifier: ^19.2.0
         version: 19.3.0
@@ -1353,6 +1356,12 @@ packages:
   oxc-parser@0.120.0:
     resolution: {integrity: sha512-WyPWZlcIm+Fkte63FGfgFB8mAAk33aH9h5N9lphXVOHSXEBFFsmYdOBedVKly363aWABjZdaj/m9lBfEY4wt+w==}
     engines: {node: ^20.19.0 || >=22.12.0}
+
+  page-mascot@0.1.0:
+    resolution: {integrity: sha512-sw/BIqRKJ7nUfaxAGtmwQqm534I+lb2ZiXLDWZNexR1VF1RkmRl6BLVtj7hH+PrsiCPKtxHhA3IpVkXEm72FeA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: '>=18'
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
@@ -2953,6 +2962,10 @@ snapshots:
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
+
+  page-mascot@0.1.0(react@19.3.0):
+    dependencies:
+      react: 19.3.0
 
   pathe@2.0.3: {}
 
