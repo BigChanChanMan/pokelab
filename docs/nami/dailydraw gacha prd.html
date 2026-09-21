@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DailyDraw 每日一抽 · 需求文档 (PRD)</title>
+<style>
+  :root{
+    --bg:#0b0d12; --bg2:#11141b; --panel:#161a23; --panel2:#1c2130;
+    --ink:#e9edf5; --ink2:#98a3b8; --ink3:#5d6879;
+    --line:#232a38; --line2:#323b4e;
+    --gold:#e8b339; --gold2:#f5d67c; --red:#e63946; --blue:#4d9de0;
+    --green:#3ddc97; --purple:#9d6cde; --cyan:#3fd0d4;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:20px}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14.5px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{display:flex;max-width:1240px;margin:0 auto;gap:44px;padding:0 26px}
+  nav{position:sticky;top:0;align-self:flex-start;width:206px;flex:0 0 206px;height:100vh;
+      padding:38px 0;overflow-y:auto;font-size:13px}
+  nav .brand{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:800}
+  nav .brand2{font-size:12.5px;color:var(--ink3);margin:4px 0 20px;line-height:1.5}
+  nav .grp{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:15px 0 5px;font-weight:700}
+  nav a{display:block;color:var(--ink2);text-decoration:none;padding:4px 0 4px 10px;
+        border-left:2px solid var(--line);transition:.15s}
+  nav a:hover{color:var(--gold);border-left-color:var(--gold);background:#1a1608}
+  main{flex:1;min-width:0;padding:38px 0 100px}
+
+  header{border-bottom:2px solid var(--gold);padding-bottom:20px;margin-bottom:12px}
+  h1{font-size:27px;line-height:1.3;margin:0 0 8px;letter-spacing:-.4px}
+  header .sub{color:var(--ink2);font-size:14.5px;margin:0}
+  .docmeta{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1px;
+           background:var(--line);border:1px solid var(--line);margin:0 0 32px}
+  .docmeta div{background:var(--panel);padding:9px 13px;font-size:12.5px}
+  .docmeta b{display:block;color:var(--ink3);font-weight:600;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+
+  h2{font-size:19px;margin:46px 0 14px;padding-bottom:7px;border-bottom:1px solid var(--line);letter-spacing:-.2px}
+  h2:first-of-type{margin-top:0}
+  h2 .n{color:var(--gold);font-family:var(--mono);font-size:14px;margin-right:8px;font-weight:400}
+  h3{font-size:15.5px;margin:25px 0 8px}
+  p{margin:8px 0}
+  ul,ol{margin:8px 0;padding-left:20px}
+  li{margin:4px 0}
+  strong{font-weight:650}
+
+  code{font-family:var(--mono);font-size:12.5px;background:#1c2130;padding:1.5px 5px;border-radius:3px;color:var(--gold2);word-break:break-all}
+  pre{background:#080a0f;color:#d8dee9;padding:13px 15px;border-radius:6px;overflow-x:auto;
+      font-family:var(--mono);font-size:12px;line-height:1.65;margin:11px 0;border:1px solid var(--line)}
+  pre code{background:none;padding:0;color:inherit;font-size:12px}
+  pre .c{color:#5d6879}
+  pre .k{color:#ff7b72}
+  pre .s{color:#a5d6ff}
+  pre .t{color:#79c0ff}
+
+  table{width:100%;border-collapse:collapse;margin:13px 0;font-size:13px;background:var(--panel);border:1px solid var(--line)}
+  th{background:#1c2130;text-align:left;padding:8px 10px;font-weight:650;font-size:12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td code{font-size:11.5px}
+
+  .tag{display:inline-block;font-size:10.5px;font-family:var(--mono);padding:1px 6px;border-radius:3px;white-space:nowrap;line-height:1.6}
+  .tag.ok{background:#0f2a1c;color:var(--green)}
+  .tag.no{background:#2a1418;color:#e88}
+  .tag.mid{background:#2a2410;color:var(--gold)}
+  .tag.p0{background:#2a1418;color:#e88}
+  .tag.p1{background:#2a2410;color:var(--gold)}
+  .tag.p2{background:#1c2130;color:var(--ink2)}
+
+  /* 稀有度色 */
+  .r-N{color:#8b95a7} .r-R{color:var(--blue)} .r-SR{color:var(--purple)}
+  .r-SSR{color:var(--gold)} .r-UR{color:var(--red)}
+
+  .box{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);
+       padding:12px 16px;margin:14px 0;border-radius:0 5px 5px 0;font-size:14px}
+  .box.warn{border-left-color:#d99b1e;background:#1c1808}
+  .box.info{border-left-color:var(--blue);background:#0f1720}
+  .box.ok{border-left-color:var(--green);background:#0f1a15}
+  .box.danger{border-left-color:var(--red);background:#1c1013}
+  .box .t{font-weight:650;font-size:13px;margin-bottom:3px;display:block}
+
+  .req{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:13px 16px;margin:10px 0}
+  .req .hd{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+  .req .id{font-family:var(--mono);font-size:12px;color:var(--gold);font-weight:650}
+  .req .ti{font-weight:650;font-size:14px}
+  .req ul{margin:5px 0 0}
+  .req .ac{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--green);font-family:var(--mono)}
+
+  .step{border-left:2px solid var(--line);padding:0 0 6px 20px;margin-left:5px;position:relative}
+  .step::before{content:'';position:absolute;left:-6px;top:9px;width:10px;height:10px;border-radius:50%;
+                background:var(--gold);border:2px solid var(--bg)}
+  .step:last-child{border-left-color:transparent}
+  .step h3{margin-top:0}
+
+  .flow{background:#080a0f;border:1px solid var(--line);border-radius:6px;padding:14px 16px;
+        font-family:var(--mono);font-size:11.5px;line-height:1.85;overflow-x:auto;white-space:pre;color:var(--ink2)}
+
+  /* 概率条 */
+  .rate{display:flex;align-items:center;gap:11px;margin:7px 0;font-size:13px}
+  .rate .rl{width:64px;font-family:var(--mono);font-weight:700}
+  .rate .rt{flex:1;height:9px;background:#0d1017;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .rate .rf{height:100%;border-radius:6px}
+  .rate .rv{width:76px;text-align:right;font-family:var(--mono);color:var(--ink2)}
+  .rf-N{background:linear-gradient(90deg,#4b5566,#8b95a7)}
+  .rf-R{background:linear-gradient(90deg,#2b6ca8,#4d9de0)}
+  .rf-SR{background:linear-gradient(90deg,#6b46a8,#9d6cde)}
+  .rf-SSR{background:linear-gradient(90deg,#a87c1a,#e8b339)}
+  .rf-UR{background:linear-gradient(90deg,#a8202f,#e63946,#f5d67c)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav>
+  <div class="brand">DailyDraw</div>
+  <div class="brand2">每日一抽 · 需求文档 v1.0</div>
+
+  <div class="grp">概述</div>
+  <a href="#s1">1 项目定位</a>
+  <a href="#s2">2 核心玩法</a>
+  <a href="#s3">3 用户旅程</a>
+
+  <div class="grp">机制设计</div>
+  <a href="#s4">4 抽卡概率模型</a>
+  <a href="#s5">5 每日确定性</a>
+  <a href="#s6">6 保底机制</a>
+
+  <div class="grp">技术</div>
+  <a href="#s7">7 关键技术约束</a>
+  <a href="#s8">8 卡池构建</a>
+  <a href="#s9">9 数据模型</a>
+
+  <div class="grp">功能</div>
+  <a href="#s10">10 P1 抽卡主界面</a>
+  <a href="#s11">11 P2 抽卡册</a>
+  <a href="#s12">12 P3 概率公示</a>
+  <a href="#s13">13 P4 卡片详情</a>
+
+  <div class="grp">交付</div>
+  <a href="#s14">14 非功能需求</a>
+  <a href="#s15">15 里程碑</a>
+  <a href="#s16">16 风险与限制</a>
+
+  <div class="grp">附录</div>
+  <a href="#a1">A 稀有度全量清单</a>
+  <a href="#a2">B 接口使用清单</a>
+</nav>
+
+<main>
+
+<header>
+  <h1>DailyDraw · 每日一抽<br>宝可梦卡牌盲盒</h1>
+  <p class="sub">基于 TCGdex REST API · 产品需求文档</p>
+</header>
+
+<div class="docmeta">
+  <div><b>版本</b>v1.0</div>
+  <div><b>状态</b>可开发</div>
+  <div><b>数据源</b>TCGdex REST API v2</div>
+  <div><b>卡池规模</b>实测 ≈ 23,736 张</div>
+</div>
+
+<!-- ==================== 1 ==================== -->
+<h2 id="s1"><span class="n">01</span>项目定位</h2>
+
+<h3>1.1 一句话</h3>
+<p><strong>每天一张卡，全球同一张，抽完就没了。</strong>把「抽卡」这个动作从无节制的消费行为，变成一个有仪式感的日更习惯。</p>
+
+<h3>1.2 为什么是「每日一抽」而不是「无限抽」</h3>
+<p>无限抽卡的本质是老虎机——多巴胺来自「再一次」，抽到 100 张后没有任何一张被记住。每日一抽把稀缺性做进机制：<strong>一天只有一次，所以那一次是有分量的</strong>。这个约束反而放大了每次开卡的情绪强度。</p>
+
+<table>
+  <thead><tr><th style="width:150px"></th><th>无限抽卡</th><th>每日一抽</th></tr></thead>
+  <tbody>
+  <tr><td>情绪曲线</td><td>高频低幅，快速钝化</td><td>低频高幅，每天一次期待</td></tr>
+  <tr><td>结果记忆</td><td>抽完即忘</td><td>「我上周三抽到那张超梦」</td></tr>
+  <tr><td>社交性</td><td>无</td><td>「你今天抽到什么？」是天然话题</td></tr>
+  <tr><td>持续性</td><td>玩 10 分钟就腻</td><td>每天回来，形成习惯</td></tr>
+  </tbody>
+</table>
+
+<h3>1.3 差异化：全球同卡（Wordle 式）</h3>
+<p>每日抽卡结果由<strong>日期种子</strong>决定，而不是本地随机数。这意味着<strong>同一天全世界所有用户抽到的是同一张卡</strong>。</p>
+<p>这是本项目的核心设计选择，也是它区别于所有卡牌收集类产品的地方。带来的效果：</p>
+<ul>
+  <li><strong>可比较</strong>——「今天这张你抽到了吗」成为可以聊的话题，结果本身构成社交货币</li>
+  <li><strong>不可作弊</strong>——结果不由客户端随机决定，改本地代码也改不了今天抽什么</li>
+  <li><strong>可预期</strong>——保底进度对所有人一致，形成集体节奏（「再两天就到保底了」）</li>
+  <li><strong>零成本分享</strong>——不需要服务端存任何数据就能实现「全球同步」</li>
+</ul>
+
+<div class="box info">
+  <span class="t">为什么不做「每人随机」</span>
+  每人随机需要服务端存储用户进度才能做保底与防作弊，本项目是纯前端应用（无后端）。日期种子是纯前端实现「全球一致 + 不可篡改」的唯一可行路径。
+</div>
+
+<!-- ==================== 2 ==================== -->
+<h2 id="s2"><span class="n">02</span>核心玩法</h2>
+
+<h3>2.1 每日循环</h3>
+<div class="flow">├─ 打开页面 ────────────────────────────────────────┤
+│  若今日未抽：显示卡背 + 「开启今日卡包」按钮        │
+│  若今日已抽：直接展示今日卡片 + 距离下次刷新倒计时    │
+└───────────────────────────────────────────────────┘
+              ↓ 点击抽卡
+┌───────────────────────────────────────────────────┐
+│  1. 卡背脉冲放大 → 2. 白光闪过 → 3. 翻牌             │
+│     按抽中稀有度播放不同强度的粒子 / 光效             │
+│  4. 揭示卡片 + 稀有度标识 + 是否是「新收集」          │
+└───────────────────────────────────────────────────┘
+              ↓
+┌───────────────────────────────────────────────────┐
+│  写入抽卡册（本地）· 更新保底计数 · 更新连续天数      │
+│  提供「分享」按钮 → 生成结果图                        │
+└───────────────────────────────────────────────────┘</div>
+
+<h3>2.2 五个子系统</h3>
+<table>
+  <thead><tr><th style="width:130px">系统</th><th>作用</th></tr></thead>
+  <tbody>
+  <tr><td><strong>抽卡</strong></td><td>日期种子 → 稀有度 → 卡池取样，一次请求拿到卡片详情</td></tr>
+  <tr><td><strong>抽卡册</strong></td><td>本地记录每次抽取的日期、卡片、稀有度，形成时间线</td></tr>
+  <tr><td><strong>收集进度</strong></td><td>按稀有度统计已收集 / 总池量，给出完成度百分比</td></tr>
+  <tr><td><strong>连续天数</strong></td><td>记录连续抽卡天数，断签归零，形成回访压力</td></tr>
+  <tr><td><strong>概率公示</strong></td><td>透明展示各稀有度概率 + 真实卡池占比对照（合规要求，见 §4.4）</td></tr>
+  </tbody>
+</table>
+
+<h3>2.3 稀有度视觉反馈分级</h3>
+<table>
+  <thead><tr><th style="width:70px">等级</th><th style="width:130px">开卡效果</th><th>设计意图</th></tr></thead>
+  <tbody>
+  <tr><td class="r-N"><strong>N</strong></td><td>简短翻牌，无特效</td><td>日常感，不浪费情绪</td></tr>
+  <tr><td class="r-R"><strong>R</strong></td><td>蓝色描边光晕</td><td>轻度正反馈</td></tr>
+  <tr><td class="r-SR"><strong>SR</strong></td><td>紫色粒子 + 卡面扫光</td><td>明确的「好卡」信号</td></tr>
+  <tr><td class="r-SSR"><strong>SSR</strong></td><td>金色全屏闪光 + 粒子爆发 + 震动</td><td>值得截图分享的时刻</td></tr>
+  <tr><td class="r-UR"><strong>UR</strong></td><td>上述全部 + 全屏光爆 + 专属音效 + 稀有度播报</td><td>一年可能只有一两次，做成事件</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 3 ==================== -->
+<h2 id="s3"><span class="n">03</span>用户旅程</h2>
+<div class="flow">首次访问                  第二天的回访              第 30 天                长期
+─────────               ──────────              ─────────              ──────
+看到卡背                想起昨天的卡            收集 30 张              集满某个稀有度
+「开启今日卡包」          点开看看今天是什么       看到进度条              「再差 3 张」
+翻牌 → 抽到 R           抽到 SSR               比较稀有度分布           成为日常习惯
+「加入抽卡册」           截图分享               查看保底进度</div>
+
+<!-- ==================== 4 ==================== -->
+<h2 id="s4"><span class="n">04</span>抽卡概率模型</h2>
+
+<h3>4.1 五档稀有度设计</h3>
+<p>TCGdex 的 <code>rarity</code> 字段是自由文本，实测有 <strong>25 种不同取值</strong>（见附录 A）。直接用它抽卡会导致概率不可控且难以理解，因此统一归并成 5 档：</p>
+
+<table>
+  <thead><tr><th style="width:70px">档位</th><th style="width:150px">含义</th><th>归并的原始 rarity</th></tr></thead>
+  <tbody>
+  <tr><td class="r-N"><strong>N</strong></td><td>普通</td><td>Common、Uncommon</td></tr>
+  <tr><td class="r-R"><strong>R</strong></td><td>稀有</td><td>Rare、Holo Rare、Promo、One Diamond、Two Diamond</td></tr>
+  <tr><td class="r-SR"><strong>SR</strong></td><td>超稀有</td><td>Ultra Rare、Double rare、Illustration rare、Three Diamond、Holo Rare V</td></tr>
+  <tr><td class="r-SSR"><strong>SSR</strong></td><td>顶级稀有</td><td>Secret Rare、Special illustration rare、Hyper rare、Four Diamond、Shiny rare、ACE SPEC Rare、Two Star</td></tr>
+  <tr><td class="r-UR"><strong>UR</strong></td><td>传说</td><td>One Star、Pikachu Rare、Rare Holo LV.X、Holo Rare VMAX 等特典</td></tr>
+  </tbody>
+</table>
+
+<h3>4.2 抽卡权重（设计值，公开公示）</h3>
+<div class="rate"><span class="rl r-N">N</span><span class="rt"><i class="rf rf-N" style="width:60%"></i></span><span class="rv">60.0%</span></div>
+<div class="rate"><span class="rl r-R">R</span><span class="rt"><i class="rf rf-R" style="width:28%"></i></span><span class="rv">28.0%</span></div>
+<div class="rate"><span class="rl r-SR">SR</span><span class="rt"><i class="rf rf-SR" style="width:9%"></i></span><span class="rv">9.0%</span></div>
+<div class="rate"><span class="rl r-SSR">SSR</span><span class="rt"><i class="rf rf-SSR" style="width:2.7%"></i></span><span class="rv">2.7%</span></div>
+<div class="rate"><span class="rl r-UR">UR</span><span class="rt"><i class="rf rf-UR" style="width:0.3%"></i></span><span class="rv">0.3%</span></div>
+
+<p>按此权重，各档位的期望出现间隔：</p>
+<table>
+  <thead><tr><th style="width:80px">档位</th><th style="width:130px">期望间隔</th><th>体感</th></tr></thead>
+  <tbody>
+  <tr><td class="r-N">N</td><td>约 1.7 天</td><td>常态</td></tr>
+  <tr><td class="r-R">R</td><td>约 3.6 天</td><td>每周几次</td></tr>
+  <tr><td class="r-SR">SR</td><td>约 11 天</td><td>半个月一次小惊喜</td></tr>
+  <tr><td class="r-SSR">SSR</td><td>约 37 天</td><td>每月一次值得截图</td></tr>
+  <tr><td class="r-UR">UR</td><td><strong>约 333 天</strong></td><td>一年一次，做成事件</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3 档位内取样</h3>
+<p>确定档位后，在该档位的卡池中<strong>均匀随机</strong>取一张。不做二次加权——同一档内每张卡机会均等，避免出现「同样是 SSR 但某张卡永远抽不到」的黑箱感。</p>
+
+<h3>4.4 概率公示（合规）</h3>
+<div class="box danger">
+  <span class="t">这是硬性要求，不是可选项</span>
+  中国、日本、韩国等市场对随机抽取类玩法有<strong>概率公示</strong>的强制要求。本项目既然如此设计，就必须在产品内提供独立、醒目、可随时访问的概率说明页面（P3），列明各档位的精确概率、档位归并规则、保底机制规则。<strong>不得隐藏、不得用小字弱化、不得把概率页做成需要多级点击才能到达的隐蔽入口。</strong>
+</div>
+
+<div class="box ok">
+  <span class="t">本项目额外做的一件诚实的事</span>
+  除了公示设计权重，P3 还会展示<strong>真实卡池中各档位的实际占比</strong>（基于实测抽样）。让用户看到「设计概率」与「卡池构成」是两回事——前者决定了你能抽到什么档位，后者决定了该档位里有多少张卡可选。<strong>两者对照公开</strong>，而不是只给一个漂亮的概率数字。
+</div>
+
+<!-- ==================== 5 ==================== -->
+<h2 id="s5"><span class="n">05</span>每日确定性</h2>
+
+<h3>5.1 日期种子</h3>
+<p>抽卡结果必须满足：<strong>同一天、同一版本、任何用户、任何设备，结果完全一致</strong>；且不可通过改本地数据预测未来。</p>
+
+<pre><code><span class="c">// 1) 取本地日期（按用户时区），格式 YYYY-MM-DD</span>
+<span class="k">const</span> today = <span class="k">new</span> <span class="t">Date</span>().toLocaleDateString(<span class="s">'sv'</span>);  <span class="c">// "2026-09-20"</span>
+
+<span class="c">// 2) 字符串 → 32 位整数种子（FNV-1a）</span>
+<span class="k">function</span> <span class="t">hashSeed</span>(str) {
+  <span class="k">let</span> h = <span class="s">0x811c9dc5</span>;
+  <span class="k">for</span> (<span class="k">let</span> i = 0; i &lt; str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = <span class="t">Math</span>.imul(h, <span class="s">0x01000193</span>);
+  }
+  <span class="k">return</span> h &gt;&gt;&gt; 0;
+}
+
+<span class="c">// 3) mulberry32 PRNG —— 轻量、够均匀、可复现</span>
+<span class="k">function</span> <span class="t">mulberry32</span>(a) {
+  <span class="k">return function</span>() {
+    a |= 0; a = a + <span class="s">0x6D2B79F5</span> | 0;
+    <span class="k">let</span> t = <span class="t">Math</span>.imul(a ^ a &gt;&gt;&gt; 15, 1 | a);
+    t = t + <span class="t">Math</span>.imul(t ^ t &gt;&gt;&gt; 7, 61 | t) ^ t;
+    <span class="k">return</span> ((t ^ t &gt;&gt;&gt; 14) &gt;&gt;&gt; 0) / <span class="s">4294967296</span>;
+  };
+}
+
+<span class="c">// 4) 当日抽卡</span>
+<span class="k">function</span> <span class="t">drawFor</span>(dateStr, pool) {
+  <span class="k">const</span> rnd = <span class="t">mulberry32</span>(<span class="t">hashSeed</span>(dateStr + <span class="s">'|dailydraw-v1'</span>));
+  <span class="k">const</span> tier = pickTierByWeight(rnd());       <span class="c">// 第一次取值 → 档位</span>
+  <span class="k">const</span> bucket = pool.filter(c =&gt; c.tier === tier);
+  <span class="k">return</span> bucket[<span class="t">Math</span>.floor(rnd() * bucket.length)];  <span class="c">// 第二次取值 → 卡</span>
+}</code></pre>
+
+<div class="box warn">
+  <span class="t">两个容易写错的地方</span>
+  <ul style="margin:4px 0">
+    <li><strong>必须用 <code>toLocaleDateString('sv')</code></strong> 拿本地日期，不能直接用 <code>toISOString()</code>——后者返回 UTC 日期，东八区用户在晚上 8 点后会跨日，导致「今天」和日历对不上。</li>
+    <li><strong>种子必须带版本后缀</strong>（<code>|dailydraw-v1</code>）。哪天调整了概率模型或卡池，加版本号即可让新规则从切换日生效，且不会让历史记录与当天结果对不上。</li>
+  </ul>
+</div>
+
+<h3>5.2 历史可复现</h3>
+<p>由于结果是日期纯函数，抽卡册里的任意一条历史记录都可以<strong>用同样公式重新算出来</strong>。这带来一个额外好处：即使用户清空了 localStorage，输入日期仍能验证那天抽的是什么，不需要任何服务端存储。</p>
+
+<h3>5.3 每日刷新时刻</h3>
+<p>刷新按<strong>用户本地时区的 00:00</strong>。页面上常驻倒计时，显示距离下一次可抽还有多久。不使用 UTC 统一刷新——用户感知的「今天」就是所在时区的今天。</p>
+
+<!-- ==================== 6 ==================== -->
+<h2 id="s6"><span class="n">06</span>保底机制</h2>
+
+<p>纯概率抽卡存在长尾不幸：连续抽 50 天全 N 的概率是 <code>0.6^50 ≈ 0.008%</code>，虽然极小但真实存在。保底机制消除这种极端体验。</p>
+
+<h3>6.1 规则</h3>
+<table>
+  <thead><tr><th style="width:180px">规则</th><th>说明</th></tr></thead>
+  <tbody>
+  <tr><td><strong>SR 保底</strong></td><td>连续 10 天未获得 SR 及以上，第 11 天必定 SR+</td></tr>
+  <tr><td><strong>SSR 保底</strong></td><td>连续 60 天未获得 SSR 及以上，第 61 天必定 SSR+</td></tr>
+  <tr><td><strong>计数重置</strong></td><td>抽到满足条件的稀有度时，对应计数器归零</td></tr>
+  <tr><td><strong>进度可见</strong></td><td>主界面显示两个保底进度条，用户随时知道「再几天」</td></tr>
+  </tbody>
+</table>
+
+<h3>6.2 保底与确定性如何共存</h3>
+<div class="box info">
+  <span class="t">保底计数也是全局的</span>
+  由于抽卡结果由日期决定，保底计数<strong>同样可以纯本地推算</strong>：从某个基准日（如 <code>2026-01-01</code>）开始，逐日计算每天抽到什么档位，累积出截至今日的计数器。<br>
+  这意味着：<strong>所有用户的保底进度天然一致</strong>，不需要服务端，也不会出现「同样的日期不同人保底进度不同」的矛盾。<br>
+  代价：首次访问需要从基准日推算到今天（几百次纯计算，毫秒级，无网络请求）。
+</div>
+
+<h3>6.3 保底实现</h3>
+<pre><code><span class="k">const</span> EPOCH = <span class="s">'2026-01-01'</span>;   <span class="c">// 保底推算基准日</span>
+
+<span class="c">// 从基准日推算到目标日的保底状态</span>
+<span class="k">function</span> <span class="t">pityStateAt</span>(dateStr, pool) {
+  <span class="k">let</span> sinceSR = 0, sinceSSR = 0;
+  <span class="k">for</span> (<span class="k">const</span> d <span class="k">of</span> daysBetween(EPOCH, dateStr)) {
+    <span class="k">const</span> t = tierOf(drawFor(d, pool));
+    <span class="k">if</span> (TIER_RANK[t] &gt;= <span class="s">3</span>) sinceSR  = 0; <span class="k">else</span> sinceSR++;
+    <span class="k">if</span> (TIER_RANK[t] &gt;= <span class="s">4</span>) sinceSSR = 0; <span class="k">else</span> sinceSSR++;
+  }
+  <span class="k">return</span> { sinceSR, sinceSSR,
+           srDue:  sinceSR  &gt;= <span class="s">10</span>,
+           ssrDue: sinceSSR &gt;= <span class="s">60</span> };
+}</code></pre>
+<p>实际抽卡时：先算保底状态，若 <code>srDue</code> / <code>ssrDue</code> 为真则<strong>强制提升档位</strong>，再在该档位卡池内取样。</p>
+
+<!-- ==================== 7 ==================== -->
+<h2 id="s7"><span class="n">07</span>关键技术约束</h2>
+
+<p>以下几条是<strong>对线上 API 实测后确认的事实</strong>，它们直接决定了架构，不是假设：</p>
+
+<table>
+  <thead><tr><th style="width:210px">约束</th><th>实测结论</th><th>对设计的影响</th></tr></thead>
+  <tbody>
+  <tr>
+    <td><strong>没有随机卡接口</strong></td>
+    <td><code>/cards/random</code> → <span class="tag no">404</span><br>
+        <code>?random=true</code> → 返回 <code>[]</code><br>
+        <code>?random=1</code> → 返回 <code>[]</code></td>
+    <td><strong>抽卡必须完全在客户端实现。</strong>TCGdex 官方文档从未提供随机端点，这是本项目最大的技术前提。</td>
+  </tr>
+  <tr>
+    <td><strong>列表不含 rarity</strong></td>
+    <td><code>/cards</code> 返回的 CardBrief 字段实测为 <code>['id','image','localId','name']</code>，<strong>无 rarity</strong></td>
+    <td>无法按稀有度筛选抽卡，也<strong>无法</strong>用「随机取一个页码再取一张」的方式实现按稀有度加权——因为拿到列表也不知道那张卡是什么稀有度。</td>
+  </tr>
+  <tr>
+    <td><strong>卡池总量</strong></td>
+    <td>二分探测：第 474 页满、第 475 页剩 36 张（每页 50）<br><strong>总数 ≈ 23,736 张</strong></td>
+    <td>全量拉取详情需 23,736 次请求，不可行。必须用<strong>构建期采样</strong>建池（见 §8）。</td>
+  </tr>
+  <tr>
+    <td><strong>稀有度是自由文本</strong></td>
+    <td>400 张抽样中出现 <strong>25 种</strong>不同取值，含 <code>"Pikachu Rare"</code>、<code>"None"</code> 等非标准值</td>
+    <td>必须做档位归并映射，且要对未知值有兜底策略（见附录 A）。</td>
+  </tr>
+  <tr>
+    <td><strong>CORS 开放</strong></td>
+    <td><code>access-control-allow-origin: *</code></td>
+    <td>可纯前端直连，无需自建代理。</td>
+  </tr>
+  <tr>
+    <td><strong>单价探测延迟</strong></td>
+    <td>详情请求实测 0.9–5.5 s</td>
+    <td>抽卡后取详情需做 loading 与超时兜底；建议抽卡时用本地池数据即时出结果，详情异步补。</td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="box danger">
+  <span class="t">如果忽略「列表不含 rarity」这条会怎样</span>
+  很多人的第一反应是：「那我不筛选了，直接随机页码 + 随机位置取一张卡不就行了？」——这样确实能抽到卡，但<strong>概率完全不可控</strong>：因为卡池里 Common 占 23.75%、Ultra Rare 占 9.25%，直接均匀抽卡的结果是「稀有卡满天飞」，UR 和 N 的出现概率一样。<strong>抽卡体验会彻底垮掉</strong>。这正是必须预先建池的根本原因。
+</div>
+
+<!-- ==================== 8 ==================== -->
+<h2 id="s8"><span class="n">08</span>卡池构建</h2>
+
+<h3>8.1 策略：构建期采样建池</h3>
+<p>目标是在<strong>构建阶段</strong>产出一份带稀有度标注的卡池，运行时零请求即可抽卡。</p>
+
+<div class="flow">构建期（一次性，Node 脚本）
+┌──────────────────────────────────────────────────┐
+│ 1. 从多个页段取样 CardBrief（覆盖不同世代）          │
+│    实测：16 个页段 × 40 张 = 640 张候选             │
+│ 2. 并发 12 路逐张拉详情 → 拿到 rarity / set / hp    │
+│ 3. rarity → tier 归并映射                          │
+│ 4. 按 tier 分桶，剔除无图 / 未知稀有度               │
+│ 5. 输出 pool.json（压缩后约 100–200 KB）            │
+└──────────────────────────────────────────────────┘
+                    ↓ 随应用打包
+运行时（零请求抽卡）
+┌──────────────────────────────────────────────────┐
+│ 日期种子 → 抽档位 → 桶内取卡 → 立即渲染             │
+│ 仅在用户点开卡片详情时才请求 /cards/{id}            │
+└──────────────────────────────────────────────────┘</div>
+
+<h3>8.2 采样偏差与修正</h3>
+<div class="box warn">
+  <span class="t">采样池不等于全池，必须说明</span>
+  分页取样会引入偏差：TCGdex 的默认排序是 <code>releaseDate &gt; localId &gt; id</code>，等距取页会在某些世代上取多、某些取少。<br>
+  <strong>处理方式</strong>：建池后在 P3 概率公示页<strong>明确标注</strong>「本应用卡池为采样池（N 张），非全量 23,736 张」，并展示采样池自身的档位分布。不假装它是全量。
+</div>
+
+<p>若要降低偏差，可选的改进路径（按性价比排序）：</p>
+<ol>
+  <li>增加采样页数（640 → 1500 张），代价是构建时间线性增长</li>
+  <li>按世代分层采样：先拉 <code>/series</code>，按 series 均匀分配采样配额</li>
+  <li>优先保证<strong>每档都有足够多的卡</strong>（每档至少 40 张），而不是追求与全池分布一致——因为抽卡体验取决于档位内可选卡数，不取决于它是否忠实还原全池</li>
+</ol>
+
+<h3>8.3 第三方数据依赖与降级</h3>
+<p>卡池是构建期快照，运行时不依赖 TCGdex 也能正常抽卡；只有「查看卡片详情」需要联网。若接口不可用，抽卡流程完全不受影响（卡图来自 assets CDN，已缓存）。这是本项目相对前一个方案的显著优势——<strong>核心玩法不依赖实时接口</strong>。</p>
+
+<!-- ==================== 9 ==================== -->
+<h2 id="s9"><span class="n">09</span>数据模型</h2>
+
+<pre><code><span class="c">// ---- 构建期产物：卡池 ----</span>
+<span class="k">interface</span> <span class="t">PoolCard</span> {
+  id: <span class="t">string</span>;              <span class="c">// "swsh3-136"</span>
+  name: <span class="t">string</span>;
+  image?: <span class="t">string</span>;           <span class="c">// 基址，需拼 /low.webp 或 /high.png</span>
+  rarity: <span class="t">string</span>;            <span class="c">// 原始值，如 "Secret Rare"</span>
+  tier: <span class="t">'N'</span>|<span class="s">'R'</span>|<span class="s">'SR'</span>|<span class="s">'SSR'</span>|<span class="s">'UR'</span>;   <span class="c">// 归并后的档位</span>
+  set?: <span class="t">string</span>;
+  setName?: <span class="t">string</span>;
+  illustrator?: <span class="t">string</span>;
+  category?: <span class="t">string</span>;
+  hp?: <span class="t">number</span>;
+  types?: <span class="t">string</span>[];
+  localId?: <span class="t">string</span>;
+  dexId?: <span class="t">number</span>[];
+}
+
+<span class="c">// ---- 本地存储：抽卡记录 ----</span>
+<span class="k">interface</span> <span class="t">DrawRecord</span> {
+  date: <span class="t">string</span>;             <span class="c">// "2026-09-20"，主键</span>
+  cardId: <span class="t">string</span>;
+  tier: <span class="t">string</span>;
+  rarity: <span class="t">string</span>;
+  name: <span class="t">string</span>;
+  image?: <span class="t">string</span>;
+  isPity: <span class="t">boolean</span>;         <span class="c">// 是否由保底触发的</span>
+  revealedAt: <span class="t">number</span>;       <span class="c">// 实际点击揭晓的时间戳</span>
+}
+
+<span class="c">// ---- 本地存储：整体状态 ----</span>
+<span class="k">interface</span> <span class="t">AlbumState</span> {
+  version: <span class="t">1</span>;
+  draws: <span class="t">DrawRecord</span>[];      <span class="c">// 按 date 升序</span>
+  streak: <span class="t">number</span>;            <span class="c">// 连续抽卡天数</span>
+  lastDrawDate: <span class="t">string</span>|<span class="k">null</span>;
+}</code></pre>
+
+<div class="box info">
+  <span class="t">只存日期，不存完整卡片对象</span>
+  <code>DrawRecord</code> 只存 <code>cardId</code> 与展示必需的少量字段。完整卡片信息在需要时从本地池或详情接口取——这样历史记录不会因为字段冗余而膨胀，也便于将来调整卡池后仍能正确回查。
+</div>
+
+<!-- ==================== 10 ==================== -->
+<h2 id="s10"><span class="n">10</span>页面 P1 · 抽卡主界面</h2>
+<p><strong>路由</strong> <code>/</code> &nbsp;·&nbsp; <strong>目标</strong>：一屏之内完成「今天还没抽」到「揭晓结果」的完整体验。</p>
+
+<div class="req">
+  <div class="hd"><span class="id">P1-01</span><span class="ti">未抽状态</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>居中展示<strong>卡背</strong>，带呼吸式脉冲动画（缓慢缩放 + 光晕），暗示「这里可以点」。</li>
+    <li>卡背下方是主按钮「开启今日卡包」。</li>
+    <li>顶部显示今日日期，让用户明确「这是今天的那一张」。</li>
+    <li>已抽状态下同一位置直接展示卡片正面，不再显示卡背。</li>
+  </ul>
+  <div class="ac">✓ 验收：首次打开显示卡背与按钮；点击进入翻牌流程</div>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P1-02</span><span class="ti">翻牌动画</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>点击后禁止重复触发（按钮立即进入 disabled）。</li>
+    <li>动画三段：<strong>脉冲放大</strong>（300ms）→ <strong>白光过曝</strong>（200ms）→ <strong>3D 翻转揭示</strong>（600ms，<code>rotateY(180deg)</code>）。</li>
+    <li>按档位强度叠加特效：R 蓝光晕 / SR 紫色粒子 / SSR 金色闪光 + 粒子爆发 / UR 全屏光爆。</li>
+    <li>UR 档位额外触发一次 <code>navigator.vibrate</code>（移动端）与稀有度播报文案。</li>
+    <li>动画总时长控制在 <strong>1.2–2.0 秒</strong>——足够制造仪式感，又不至于让人等得不耐烦。</li>
+  </ul>
+  <div class="ac">✓ 验收：点击按钮后特效按档位正确播放，且动画期间无法重复点击</div>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P1-03</span><span class="ti">结果展示</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>卡片正面 + 卡名 + 稀有度标签（按档位着色）+ 所属卡包。</li>
+    <li>若该卡是<strong>首次收集</strong>，显示「NEW」徽标；重复则显示「已拥有 ×N」。</li>
+    <li>若本次由<strong>保底触发</strong>，明确标注「保底触发」，不隐瞒——这是诚实的体现，也让用户理解为什么这次特别好。</li>
+    <li>操作区：「加入抽卡册」（默认自动加入）、「查看详情」、「分享结果」。</li>
+  </ul>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P1-04</span><span class="ti">保底进度条</span><span class="tag p1">P1</span></div>
+  <ul>
+    <li>主界面常驻两条细进度条：SR 保底（x/10）、SSR 保底（x/60）。</li>
+    <li>接近触发时（剩 1–2 天）高亮并提示「即将保底」。</li>
+    <li>抽到对应档位后进度条归零，给出明确反馈。</li>
+  </ul>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P1-05</span><span class="ti">倒计时</span><span class="tag p1">P1</span></div>
+  <ul>
+    <li>已抽状态下显示距离下次可抽的倒计时（<code>HH:MM:SS</code>），每秒更新。</li>
+    <li>归零时自动切换回可抽状态，无需刷新页面。</li>
+  </ul>
+  <div class="ac">✓ 验收：倒计时每秒递减；跨过 00:00 后页面自动变为可抽</div>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P1-06</span><span class="ti">连续天数</span><span class="tag p2">P2</span></div>
+  <ul>
+    <li>显示当前连续抽卡天数。断签（跳过一天）时归零并在下次抽卡时提示。</li>
+  </ul>
+</div>
+
+<!-- ==================== 11 ==================== -->
+<h2 id="s11"><span class="n">11</span>页面 P2 · 抽卡册</h2>
+<p><strong>路由</strong> <code>/album</code> &nbsp;·&nbsp; <strong>持久化</strong> localStorage</p>
+
+<div class="req">
+  <div class="hd"><span class="id">P2-01</span><span class="ti">历史时间线</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>按日期倒序展示所有抽卡记录，每条显示日期、卡片缩略图、卡名、稀有度标签。</li>
+    <li>点任意一条可展开该日卡片的完整详情，并显示「这一天的卡可以重新验证」——因为结果是日期的纯函数。</li>
+    <li>稀有度用颜色区分的同时<strong>必须有文字标签</strong>，不能只靠颜色。</li>
+  </ul>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P2-02</span><span class="ti">统计面板</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>总抽取次数、当前连续天数、最长连续天数。</li>
+    <li><strong>各档位获取分布</strong>：横向条形，展示实际抽到的档位构成，并与理论概率并列对照——用户能直观看到「我抽到的和理论值差多少」。</li>
+    <li>收集完成度：各档位已收集去重卡数 / 该档位池内总数，形成进度条。</li>
+  </ul>
+  <div class="ac">✓ 验收：抽取若干次后分布图正确反映实际结果，且未因重复卡片而重复计数</div>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P2-03</span><span class="ti">重合卡标记</span><span class="tag p1">P1</span></div>
+  <ul>
+    <li>重复出现的卡片在时间线与卡片墙中标记 <code>×N</code>。</li>
+    <li>提供「仅看首次获得」筛选，方便查看真正的收集成果。</li>
+  </ul>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P2-04</span><span class="ti">数据导出</span><span class="tag p2">P2</span></div>
+  <ul>
+    <li>导出抽卡记录为 JSON（含日期与卡片 id，可用于验证确定性）。</li>
+    <li>导入时校验结构，非法数据给出明确错误。</li>
+  </ul>
+</div>
+
+<!-- ==================== 12 ==================== -->
+<h2 id="s12"><span class="n">12</span>页面 P3 · 概率公示</h2>
+<p><strong>路由</strong> <code>/rates</code> &nbsp;·&nbsp; <strong>入口</strong>：主界面与抽卡册的顶部导航常驻可见，不做隐藏入口</p>
+
+<div class="req">
+  <div class="hd"><span class="id">P3-01</span><span class="ti">设计概率表</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>列出五个档位的精确概率值（60% / 28% / 9% / 2.7% / 0.3%）。</li>
+    <li>标注每一档归并了哪些原始 rarity 值，让规则完全透明。</li>
+    <li>给出期望间隔（「UR 平均约 333 天一张」），帮助用户建立合理预期。</li>
+  </ul>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P3-02</span><span class="ti">真实卡池占比对照</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>展示当前应用卡池中各档位的<strong>实际卡数占比</strong>，与设计概率并列。</li>
+    <li>明确说明两者的区别：<em>设计概率决定「抽到哪个档位」，卡池占比决定「该档位里有多少张备选」</em>。</li>
+    <li>明确标注卡池为采样池及其规模，不冒充全量。</li>
+  </ul>
+  <div class="ac">✓ 验收：两套数据并列呈现，且文案清楚解释了它们的差别</div>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P3-03</span><span class="ti">保底规则说明</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>完整说明 SR / SSR 两条保底的触发条件、计数重置规则。</li>
+    <li>展示当前全局保底进度，说明「所有用户的保底进度是一致的」及其原因。</li>
+  </ul>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P3-04</span><span class="ti">确定性说明</span><span class="tag p1">P1</span></div>
+  <ul>
+    <li>解释「为什么全球抽到的是同一张卡」：日期种子 + 可复现随机数。</li>
+    <li>提供验证入口：输入任意日期，展示该日期的抽卡结果，证明历史可复现。</li>
+  </ul>
+</div>
+
+<!-- ==================== 13 ==================== -->
+<h2 id="s13"><span class="n">13</span>页面 P4 · 卡片详情</h2>
+<p><strong>形态</strong> 弹层（从 P1 结果区或 P2 时间线打开）</p>
+
+<div class="req">
+  <div class="hd"><span class="id">P4-01</span><span class="ti">卡面与基础信息</span><span class="tag p0">P0</span></div>
+  <ul>
+    <li>高清卡图 <code>high.png</code>，加载期间先用 <code>low.webp</code> 占位模糊过渡。</li>
+    <li>卡名、卡包名 + logo、编号、稀有度（原始值 + 归属档位）、画师、类别。</li>
+    <li>宝可梦卡额外展示 HP、属性、进化阶段、招式（含能量消耗与效果文本）。</li>
+  </ul>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P4-02</span><span class="ti">获取历史</span><span class="tag p1">P1</span></div>
+  <ul>
+    <li>展示这张卡在本地抽卡册中共出现过几次、分别是哪几天。</li>
+    <li>提供「复现验证」按钮：用日期重算并展示结果一致性。</li>
+  </ul>
+</div>
+
+<div class="req">
+  <div class="hd"><span class="id">P4-03</span><span class="ti">数据来源标注</span><span class="tag p1">P1</span></div>
+  <ul>
+    <li>明确标注卡片数据来自 TCGdex，卡图来自 assets.tcgdex.net。</li>
+  </ul>
+</div>
+
+<!-- ==================== 14 ==================== -->
+<h2 id="s14"><span class="n">14</span>非功能需求</h2>
+
+<h3>14.1 性能</h3>
+<ul>
+  <li><strong>抽卡必须在 100ms 内出结果</strong>——结果由本地池计算，不发起网络请求；只有卡图是异步加载的。</li>
+  <li>卡池 JSON 压缩后控制在 200 KB 以内；超出则按档位拆分按需加载。</li>
+  <li>卡图统一 <code>low.webp</code>（约 20 KB），仅详情页升级到 <code>high.png</code>。</li>
+  <li>卡图设置固定宽高比（卡牌比例约 <strong>245 : 342</strong>），CLS &lt; 0.1。</li>
+</ul>
+
+<h3>14.2 动画性能</h3>
+<ul>
+  <li>翻牌与粒子动画<strong>只用 <code>transform</code> 与 <code>opacity</code></strong>，不触发 layout / paint。</li>
+  <li>粒子数量按档位分级控制（SSR ≤ 60 个，UR ≤ 120 个），避免低端机掉帧。</li>
+  <li>尊重 <code>prefers-reduced-motion</code>：开启时降级为简单淡入，直接展示结果。</li>
+</ul>
+
+<h3>14.3 数据安全</h3>
+<ul>
+  <li>全部数据存于 localStorage，不采集、不上传任何用户数据。</li>
+  <li>localStorage 在隐私模式下可能抛异常，读写必须包 try/catch 并降级为内存存储。</li>
+  <li>存储键带版本号 <code>dailydraw.album.v1</code>，便于将来迁移。</li>
+</ul>
+
+<h3>14.4 可访问性</h3>
+<ul>
+  <li>抽卡按钮可用键盘 Enter / Space 触发。</li>
+  <li>动画结果通过 <code>aria-live</code> 播报（「恭喜获得 SSR 稀有度卡片：超梦」）。</li>
+  <li>稀有度不可仅靠颜色区分，必须同时有文字标签。</li>
+  <li>对比度满足 WCAG AA。</li>
+</ul>
+
+<h3>14.5 响应式</h3>
+<table>
+  <thead><tr><th style="width:130px">断点</th><th>布局</th></tr></thead>
+  <tbody>
+  <tr><td>≥ 1024px</td><td>卡片居中大尺寸展示，统计面板双列</td></tr>
+  <tr><td>640–1023px</td><td>卡片尺寸收缩，统计面板单列</td></tr>
+  <tr><td>&lt; 640px</td><td>卡片接近满宽，导航折叠，详情弹层全屏</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 15 ==================== -->
+<h2 id="s15"><span class="n">15</span>里程碑</h2>
+
+<div class="step">
+  <h3>M0 · 卡池构建 <span class="tag p0">P0</span></h3>
+  <p>写构建脚本：分页采样 CardBrief → 并发拉详情 → 归并 tier → 输出 <code>pool.json</code>。同时产出档位分布统计，供 P3 公示页使用。</p>
+  <div class="ac">✓ 五个档位每档至少 40 张卡；pool.json 压缩后 &lt; 200 KB</div>
+</div>
+
+<div class="step">
+  <h3>M1 · 抽卡内核 <span class="tag p0">P0</span></h3>
+  <p>实现 <code>hashSeed</code> / <code>mulberry32</code> / <code>drawFor</code> / <code>pityStateAt</code>。写单元测试验证：同日期必出同卡、概率分布符合权重、保底在阈值处正确触发。</p>
+  <div class="ac">✓ 用 10000 次模拟验证各档位频率与设定权重的偏差 &lt; 1%</div>
+</div>
+
+<div class="step">
+  <h3>M2 · 抽卡主界面 P1 <span class="tag p0">P0</span></h3>
+  <p>卡背 → 翻牌动画 → 结果展示 → 保底进度条 → 倒计时。按档位分级特效。</p>
+  <div class="ac">✓ 点击后按档位正确播放特效；同一日期刷新页面结果不变</div>
+</div>
+
+<div class="step">
+  <h3>M3 · 抽卡册 P2 <span class="tag p0">P0</span></h3>
+  <p>localStorage 读写、时间线、统计面板、重复卡标记、连续天数。</p>
+  <div class="ac">✓ 抽卡记录刷新后仍在；分布统计与理论概率并列正确</div>
+</div>
+
+<div class="step">
+  <h3>M4 · 概率公示 P3 <span class="tag p0">P0</span></h3>
+  <p>设计概率表 + 真实卡池占比对照 + 保底规则 + 确定性验证入口。</p>
+  <div class="ac">✓ 两套数据并列且解释清楚；日期验证输入可复现历史结果</div>
+</div>
+
+<div class="step">
+  <h3>M5 · 卡片详情 P4 + 收尾 <span class="tag p1">P1</span></h3>
+  <p>详情弹层、获取历史、空状态、响应式断点、可访问性检查、reduced-motion 降级。</p>
+  <div class="ac">✓ 移动端无横向溢出；开启 reduced-motion 后动画正确降级</div>
+</div>
+
+<div class="step">
+  <h3>M6 · 可选加分项 <span class="tag p2">P2</span></h3>
+  <ul>
+    <li><strong>分享图生成</strong>：用 Canvas 把当日结果合成一张带日期的分享图（不放真实卡图以避免版权问题，用卡名 + 稀有度 + 日期构成可辨识结果，Wordle 式）。</li>
+    <li><strong>年度回顾</strong>：汇总一年抽卡记录，生成「我的 2026 抽卡年报」。</li>
+    <li><strong>成就系统</strong>：首次 UR、连续 30 天、集齐某档位等。</li>
+  </ul>
+</div>
+
+<!-- ==================== 16 ==================== -->
+<h2 id="s16"><span class="n">16</span>风险与限制</h2>
+
+<table>
+  <thead><tr><th style="width:190px">风险 / 限制</th><th style="width:70px">影响</th><th>应对</th></tr></thead>
+  <tbody>
+  <tr>
+    <td><strong>无随机卡接口</strong></td>
+    <td><span class="tag no">高</span></td>
+    <td>已实测确认（<code>/cards/random</code> 404）。抽卡全部客户端实现，卡池随应用打包。这决定了整个架构，不是可绕过的细节。</td>
+  </tr>
+  <tr>
+    <td><strong>列表缺 rarity 字段</strong></td>
+    <td><span class="tag no">高</span></td>
+    <td>无法按稀有度实时筛选。只能用构建期采样池，并接受采样偏差（已在 §8.2 说明修正路径）。</td>
+  </tr>
+  <tr>
+    <td><strong>采样池非全量</strong></td>
+    <td><span class="tag mid">中</span></td>
+    <td>池内卡数少于真实 23,736 张。已在 P3 明确标注，不冒充全量。可通过增加采样页数缓解。</td>
+  </tr>
+  <tr>
+    <td><strong>稀有度取值不规范</strong></td>
+    <td><span class="tag mid">中</span></td>
+    <td>25 种取值含 <code>"None"</code>、<code>"Pikachu Rare"</code> 等异常值。归并映射需有兜底：未知值归入 N 档并记录日志，不能因单条脏数据导致抽卡崩溃。</td>
+  </tr>
+  <tr>
+    <td><strong>本地存储可被清除</strong></td>
+    <td><span class="tag mid">中</span></td>
+    <td>清缓存会丢失抽卡册。由于结果是日期纯函数，提供「按日期重建记录」功能即可恢复——这是确定性设计的额外收益。</td>
+  </tr>
+  <tr>
+    <td><strong>时区边界</strong></td>
+    <td><span class="tag p1">低</span></td>
+    <td>跨时区用户刷新时刻不同，且同一 UTC 时刻不同地区可能处于不同「今天」。这是「本地日期」设计的固有结果，属于预期行为，需在 P3 说明。</td>
+  </tr>
+  <tr>
+    <td><strong>卡图版权</strong></td>
+    <td><span class="tag p1">低</span></td>
+    <td>卡面图像版权属宝可梦公司。本项目为学习/演示性质，卡图直连 TCGdex 官方 CDN，不转载、不再分发。若产品化需评估授权。</td>
+  </tr>
+  <tr>
+    <td><strong>概率公示合规</strong></td>
+    <td><span class="tag p1">低</span></td>
+    <td>已在 P3 作为一等公民页面设计，入口常驻可见，不做隐藏。</td>
+  </tr>
+  </tbody>
+</table>
+
+<!-- ==================== 附录 ==================== -->
+<h2 id="a1"><span class="n">A</span>附录 · 稀有度全量清单</h2>
+<p>以下为 400 张卡片抽样中出现的全部 25 种 <code>rarity</code> 原始取值，按出现频率排序，并给出档位归并结果：</p>
+<table>
+  <thead><tr><th style="width:230px">原始 rarity</th><th style="width:80px">占比</th><th style="width:70px">归并档位</th></tr></thead>
+  <tbody>
+  <tr><td>Common</td><td>23.75%</td><td class="r-N">N</td></tr>
+  <tr><td>Uncommon</td><td>17.75%</td><td class="r-N">N</td></tr>
+  <tr><td>Rare</td><td>13.50%</td><td class="r-R">R</td></tr>
+  <tr><td>Ultra Rare</td><td>9.25%</td><td class="r-SR">SR</td></tr>
+  <tr><td>One Diamond</td><td>5.50%</td><td class="r-R">R</td></tr>
+  <tr><td>None（无字段）</td><td>4.75%</td><td class="r-N">N（兜底）</td></tr>
+  <tr><td>Holo Rare</td><td>3.25%</td><td class="r-R">R</td></tr>
+  <tr><td>Two Star</td><td>3.25%</td><td class="r-SSR">SSR</td></tr>
+  <tr><td>Secret Rare</td><td>3.00%</td><td class="r-SSR">SSR</td></tr>
+  <tr><td>Special illustration rare</td><td>2.75%</td><td class="r-SSR">SSR</td></tr>
+  <tr><td>Two Diamond</td><td>2.00%</td><td class="r-R">R</td></tr>
+  <tr><td>Double rare</td><td>2.00%</td><td class="r-SR">SR</td></tr>
+  <tr><td>Illustration rare</td><td>1.50%</td><td class="r-SR">SR</td></tr>
+  <tr><td>Hyper rare</td><td>1.50%</td><td class="r-SSR">SSR</td></tr>
+  <tr><td>Three Diamond</td><td>1.25%</td><td class="r-SR">SR</td></tr>
+  <tr><td>One Star</td><td>1.25%</td><td class="r-UR">UR</td></tr>
+  <tr><td>Promo</td><td>1.00%</td><td class="r-R">R</td></tr>
+  <tr><td>Four Diamond</td><td>0.50%</td><td class="r-SSR">SSR</td></tr>
+  <tr><td>Rare Holo LV.X</td><td>0.50%</td><td class="r-UR">UR</td></tr>
+  <tr><td>Holo Rare V</td><td>0.50%</td><td class="r-SR">SR</td></tr>
+  <tr><td>(空字符串)</td><td>0.25%</td><td class="r-N">N（兜底）</td></tr>
+  <tr><td>Pikachu Rare</td><td>0.25%</td><td class="r-UR">UR</td></tr>
+  <tr><td>Holo Rare VMAX</td><td>0.25%</td><td class="r-UR">UR</td></tr>
+  <tr><td>ACE SPEC Rare</td><td>0.25%</td><td class="r-SSR">SSR</td></tr>
+  <tr><td>Shiny rare</td><td>0.25%</td><td class="r-SSR">SSR</td></tr>
+  </tbody>
+</table>
+
+<div class="box warn">
+  <span class="t">归并表需要可维护</span>
+  这张表基于 400 张抽样得出，全量 23,736 张中必然还存在未见的取值。实现上应把映射写成<strong>显式表 + 默认兜底</strong>，遇到未知值时归入 N 档并输出一条 <code>console.warn</code>，便于后续补表，而不是抛错。
+</div>
+
+<h2 id="a2"><span class="n">B</span>附录 · 接口使用清单</h2>
+<p>基址 <code>https://api.tcgdex.net/v2/{lang}</code>，全部 GET，无需鉴权。</p>
+<table>
+  <thead><tr><th style="width:110px">阶段</th><th style="width:200px">用途</th><th>请求</th><th style="width:66px">实测</th></tr></thead>
+  <tbody>
+  <tr><td>构建期</td><td>分页取样卡池</td><td><code>GET /{lang}/cards?pagination:page=N&amp;pagination:itemsPerPage=40</code></td><td><span class="tag ok">200</span></td></tr>
+  <tr><td>构建期</td><td>逐张取稀有度</td><td><code>GET /{lang}/cards/{id}</code></td><td><span class="tag ok">200</span></td></tr>
+  <tr><td>构建期</td><td>卡包名翻译</td><td><code>GET /{lang}/sets</code></td><td><span class="tag ok">200</span></td></tr>
+  <tr><td>运行时</td><td>卡片详情弹层</td><td><code>GET /{lang}/cards/{id}</code></td><td><span class="tag ok">200</span></td></tr>
+  <tr><td>运行时</td><td>卡图</td><td><code>{image}/low.webp</code> · <code>{image}/high.png</code></td><td><span class="tag ok">200</span></td></tr>
+  <tr><td>运行时</td><td>抽卡本体</td><td colspan="2"><strong>不请求任何接口</strong>——本地池 + 日期种子计算</td></tr>
+  </tbody>
+</table>
+
+<div class="box danger">
+  <span class="t">已确认不存在、禁止使用的端点</span>
+  <code>/cards/random</code> <span class="tag no">404</span> &nbsp;
+  <code>?random=true</code> <span class="tag no">返回空数组</span> &nbsp;
+  <code>/dexids</code> <span class="tag no">404</span> &nbsp;
+  <code>/regulationmarks</code> <span class="tag no">404</span> &nbsp;
+  <code>/energytypes</code> <span class="tag no">404</span> &nbsp;
+  <code>/trainertypes</code> <span class="tag no">404</span> &nbsp;
+  <code>/variants</code> <span class="tag no">404</span> &nbsp;
+  <code>/hps</code> <span class="tag no">404</span>
+</div>
+
+<div class="box info">
+  <span class="t">图片拼接规则（实测）</span>
+  卡片 <code>image</code> 是不带扩展名的基址，必须拼 <code>/low.webp</code>（~20 KB）、<code>/high.webp</code>（~78 KB）或 <code>/high.png</code>（~360 KB）。<strong><code>/low.png</code> 不存在</strong>。卡包 <code>logo</code> 规则不同，是直接接扩展名 <code>{logo}.webp</code>。
+</div>
+
+</main>
+</div>
+</body>
+</html>
