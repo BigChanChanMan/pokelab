@@ -183,3 +183,46 @@
     );
   background-size: 28px 28px;
 }
+
+/*
+ * 指针跟随的卡片倾斜（issue #25）。结构见 components/tilt-card.tsx：
+ * 外层持 perspective，内层持 transform —— perspective 作用于子元素，
+ * 套在自己身上无效。
+ *
+ * 缓动走 transition 而不是 rAF 循环：指针事件直接改这几个变量，浏览器负责
+ * 补间。180ms 是「跟得上手」和「不抖」之间的取舍；离开时指针事件停了，
+ * 于是这同一条 transition 把卡片**转回**平放，不需要单独的复位动画。
+ *
+ * 刻意**不用** `transform-style: preserve-3d`：卡面上的东西（卡图、高光、
+ * 卡背的「?」）都是同一张卡的一部分，不需要各自浮在不同深度。去掉之后整张卡
+ * 作为一个平面被旋转 —— 这正是我们要的，而且绕开了 preserve-3d 把子元素
+ * 栅格化到 3D 平面导致的文字发虚。（hover-tilt 需要它，是因为它要让 slotted
+ * 内容用 translateZ 浮起来；我们的卡名在卡片外面，是兄弟节点，没这个需求。）
+ */
+.tilt-card__inner {
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  will-change: transform;
+}
+
+/* 跟随时不缓动 —— 缓动会让卡片像拖着一根橡皮筋，落后于指针。 */
+.tilt-card[data-tracking='true'] .tilt-card__inner {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-card__inner {
+    transition: none;
+  }
+}
+
+/*
+ * 卡面自身的阴影也跟着缓动 —— 阴影位移和旋转必须同时到位，否则卡片转过去了
+ * 影子还留在原地，读起来像两张不同的东西在动。
+ */
+.card-face {
+  transition: box-shadow 180ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.tilt-card[data-tracking='true'] .card-face {
+  transition: none;
+}

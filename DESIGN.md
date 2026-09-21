@@ -891,6 +891,8 @@ import-protection 就会因为 `react-start/server` 拒绝整个客户端图
 | `db/schema.ts` | `gacha_draws` —— 本仓库**第一张业务数据表** |
 | `server/gacha.ts` | `readRates` / `readAlbum` / `drawToday` |
 | `routes/_console/gacha/*` | 主界面 / 抽卡册 / 概率公示 |
+| `lib/tilt.ts` | 倾斜的数学。纯函数，配 `tilt.test.ts` |
+| `components/tilt-card.tsx` | 指针接线。只包主舞台那一张 |
 
 三条值得单独记住的：
 
@@ -905,6 +907,29 @@ import-protection 就会因为 `react-start/server` 拒绝整个客户端图
 
 `data/card-pool.ts` 是**快照**：卡池一变，历史记录的重算结果会跟着变。
 `lib/gacha.ts` 的 `SEED_VERSION` 就是为这件事准备的。
+
+### 2026-09-21 新增：卡片表面倾斜（issue #25）
+
+指针跟随的 3D 倾斜，只作用于 `/gacha` 主舞台那一张。**不引依赖** ——
+只借用 `simeydotme/hover-tilt` 的技法（指针坐标写进 CSS 自定义属性 +
+`perspective` + 缓动回正），代码是自己的。
+
+为什么不用 `simeydotme/pokemon-cards-css`：它是 **GPL-3.0**、要 vendored 约
+4.5 MB 纹理、`Card.svelte` 在初始化时摸 `document`（SSR 下要客户端边界），
+而它的 CSS 单独放着只是一张**静态**卡。更根本的是它的招牌是**全息彩虹**，
+和本仓库「实色 + 黑边 + 偏移阴影」的语言相反 —— 硬接进来会像从别的网站抠的。
+
+三条设计约束：
+
+1. **倾斜角度所有档位一致，只有光泽强度按稀有度分级。** 倾斜是**物理属性**
+   （一张卡有多厚），不是稀有度信号；让 UR 比 N 歪得多，读起来像「UR 更轻」。
+   光泽才是价值信号，正好接上已有的 `RARITY_GLOW` 模型。
+2. **偏移阴影随指针反向位移。** 指针往左上、阴影往右下，卡像被抬起来 ——
+   这是厚度感的来源，也是 neobrutalism 本来就有的语汇，不需要新造视觉。
+3. **`prefers-reduced-motion: reduce` 与 `(hover: none)` 下完全不接线。**
+   指针跟随对前庭敏感人群是实打实的问题，这是 PRD §14.2 的硬性要求，
+   此前全仓没有任何处理。触屏不引陀螺仪（iOS 要弹权限框），
+   也不动 `touch-action`（那会吃掉卡背按钮的点击）。
 
 ---
 
@@ -944,6 +969,9 @@ _2026-09-21 修订_：`DATABASE_URL` 用的是**文件路径**（`./local.db`）
 - **扩充卡池** —— 沿用原型内联的 599 张（UR 只有 6 张）。按公示的 333 天期望
   间隔，同一张 UR 重复要等约 2000 天，够用。真要扩时照 PRD §8.1 写采集脚本。
 - **多时区** —— 「今天」固定东八区。要真做多时区，得先重新定义「全球同卡」。
+- **PRD §P1-02 的完整特效分级** —— SSR 金色粒子爆发、UR 全屏光爆 + 震动 + 音效。
+  _2026-09-21 修订_：**卡片表面倾斜与光泽**（issue #25）与 **`prefers-reduced-motion`
+  降级**已经做掉了，从这条里移出；粒子爆发 / 全屏光爆 / 震动 / 音效仍未做。
 
 ### 2026-09-21 新增的明确不做
 

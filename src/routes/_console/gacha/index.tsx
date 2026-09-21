@@ -3,6 +3,7 @@ import { LockIcon, SparklesIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { CardFace, RarityBadge } from '@/components/rarity'
+import { TiltCard } from '@/components/tilt-card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +17,7 @@ import { Progress } from '@/components/ui/progress'
 import { can } from '@/lib/capabilities'
 import { messageOf } from '@/lib/errors'
 import { RARITY_LABEL } from '@/lib/gacha'
+import { BACK_TILT_SCALE, MAX_TILT_DEG } from '@/lib/tilt'
 import { TIER_LABEL } from '@/lib/tiers'
 import { drawToday, readAlbum, type AlbumData, type DrawView } from '@/server/gacha'
 
@@ -137,21 +139,28 @@ function Stage({
 
       <div className="w-56 sm:w-64">
         {showFront && result ? (
-          <CardFace
-            image={result.card.image}
-            name={result.card.name}
-            tier={result.tier}
-          />
+          <TiltCard>
+            <CardFace
+              image={result.card.image}
+              name={result.card.name}
+              tier={result.tier}
+            />
+          </TiltCard>
         ) : (
-          <button
-            type="button"
-            onClick={onDraw}
-            disabled={busy}
-            aria-label="开启今日卡包"
-            className="grid aspect-[245/342] w-full place-items-center border-2 border-border bg-primary text-primary-foreground transition-transform hover:scale-[1.02] disabled:opacity-60"
-          >
-            <span className="font-head text-6xl">?</span>
-          </button>
+          // 卡背的倾斜弱一档 —— 它是「这里可以点」的暗示，不是欣赏对象。
+          // 原先的 `hover:scale-[1.02]` 去掉了：它就是这套反馈的粗糙版本，
+          // 现在由倾斜接替；两者叠在一起会让卡背在指针下同时放大又转动，很吵。
+          <TiltCard maxDeg={MAX_TILT_DEG * BACK_TILT_SCALE}>
+            <button
+              type="button"
+              onClick={onDraw}
+              disabled={busy}
+              aria-label="开启今日卡包"
+              className="grid aspect-[245/342] w-full place-items-center border-2 border-border bg-primary text-primary-foreground disabled:opacity-60"
+            >
+              <span className="font-head text-6xl">?</span>
+            </button>
+          </TiltCard>
         )}
       </div>
 

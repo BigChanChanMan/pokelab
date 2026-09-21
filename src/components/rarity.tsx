@@ -17,13 +17,47 @@ export const RARITY_COLOR: Record<CardRarity, string> = {
   UR: 'bg-rose-600 text-white',
 }
 
-/** 卡图外框的光晕强度 —— 档位越高越亮。 */
-export const RARITY_GLOW: Record<CardRarity, string> = {
-  N: 'shadow-none',
-  R: 'shadow-[0_0_24px_-4px_var(--color-sky-400)]',
-  SR: 'shadow-[0_0_32px_-4px_var(--color-violet-500)]',
-  SSR: 'shadow-[0_0_44px_-2px_var(--color-amber-400)]',
-  UR: 'shadow-[0_0_60px_0px_var(--color-rose-600)]',
+/**
+ * 卡图外框的光晕强度 —— 档位越高越亮。
+ *
+ * 这是**发光**（box-shadow 的彩色层），和下面 `GLARE_STRENGTH` 那个**表面反光**
+ * 是两回事：前者是卡自己发的光，后者是打在卡面上的光。两者都按档位递增，
+ * 但用途不同，别合并。
+ */
+export const RARITY_GLOW: Record<CardRarity, string | null> = {
+  N: null, // 普通卡不发光
+  R: '0 0 24px -4px var(--color-sky-400)',
+  SR: '0 0 32px -4px var(--color-violet-500)',
+  SSR: '0 0 44px -2px var(--color-amber-400)',
+  UR: '0 0 60px 0 var(--color-rose-600)',
+}
+
+/**
+ * 表面反光的强度 —— 档位越高，打在卡面上的高光越亮。
+ *
+ * 倾斜角度**不**按档位分级（那是物理属性：一张卡有多厚不因稀有度而变），
+ * 分级的只有这层光泽 —— 它是价值信号。见 issue #25。
+ */
+const GLARE_STRENGTH: Record<CardRarity, string> = {
+  N: '28%',
+  R: '40%',
+  SR: '52%',
+  SSR: '66%',
+  UR: '80%',
+}
+
+/**
+ * 卡片的 box-shadow：硬偏移阴影 + 档位光晕。
+ *
+ * 偏移基准 4px 就是 neobrutalism 的 `--shadow-md`，再叠加 `--tilt-shadow-*` ——
+ * 指针往左上时阴影往右下，卡片像被抬起来。不倾斜的调用点拿到默认 0px，
+ * 于是和以前完全一样。
+ */
+function cardShadow(tier: CardRarity): string {
+  const offset =
+    'calc(4px + var(--tilt-shadow-x, 0px)) calc(4px + var(--tilt-shadow-y, 0px)) 0 0 var(--border)'
+  const glow = RARITY_GLOW[tier]
+  return glow ? `${offset}, ${glow}` : offset
 }
 
 export function RarityBadge({
@@ -56,6 +90,9 @@ export function cardImage(image: string | null, quality: 'low' | 'high' = 'low')
  *
  * 固定宽高比 245:342（PRD §14.1）—— 卡图没加载出来时占位高度也不变，CLS < 0.1。
  * 没图（池子里有卡缺图）时不显示碎图标，给一块写明「无卡图」的占位。
+ *
+ * 卡图与高光**必须同层**：这一层有 `overflow-hidden`，把高光拆到兄弟节点会被
+ * 圆角/裁切各自为政，而且 3D 倾斜下会错位。
  */
 export function CardFace({
   image,
@@ -71,7 +108,8 @@ export function CardFace({
   const src = cardImage(image)
   return (
     <div
-      className={`relative aspect-[245/342] w-full overflow-hidden border-2 border-border bg-card ${RARITY_GLOW[tier]} ${className ?? ''}`}
+      className={`card-face relative aspect-[245/342] w-full overflow-hidden border-2 border-border bg-card ${className ?? ''}`}
+      style={{ boxShadow: cardShadow(tier) }}
     >
       {src ? (
         <img
@@ -91,6 +129,15 @@ export function CardFace({
           （无卡图）
         </div>
       )}
+      {/* 表面反光。不倾斜时 --tilt-glare-opacity 是 0，完全看不见。 */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at var(--tilt-glare-x, 50%) var(--tilt-glare-y, 50%), rgba(255,255,255,0.9), transparent 60%)`,
+          opacity: `calc(var(--tilt-glare-opacity, 0) * ${GLARE_STRENGTH[tier]})`,
+        }}
+      />
     </div>
   )
 }
