@@ -17,7 +17,8 @@ const SRC = 'docs/nami/dailydraw prototype.html'
 const OUT = 'src/data/card-pool.ts'
 
 const html = readFileSync(SRC, 'utf8')
-const match = /const POOL = (\[.*?\]);\n/s.exec(html)
+// `\r?\n`：仓库里存的是 LF，Windows 检出会转成 CRLF（core.autocrlf=true）。
+const match = /const POOL = (\[.*?\]);\r?\n/s.exec(html)
 if (!match) throw new Error(`在 ${SRC} 里找不到 POOL 常量`)
 
 const pool = JSON.parse(match[1])
