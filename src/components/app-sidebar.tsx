@@ -8,6 +8,7 @@ import {
   LayoutDashboardIcon,
   LockIcon,
   ShareIcon,
+  ShieldIcon,
   SwordsIcon,
   UsersIcon,
 } from 'lucide-react'
@@ -105,6 +106,17 @@ const ADVANCED: NavItem[] = [
   { label: '导出分享', to: '/export', icon: ShareIcon, cap: 'export.share' },
 ]
 
+/**
+ * 管理分组。**对非管理员完全隐藏** —— 和普通分组一样，因为「管理」
+ * 对普通训练家来说不是「存在但等级不够」，而是不存在。
+ *
+ * 页面本身还有一道按能力的守卫（`_console/admin.tsx` 的 beforeLoad），
+ * 服务端函数上还有第三道（`server/admin.ts` 的 requireCapability）。
+ */
+const ADMIN: NavItem[] = [
+  { label: '管理', to: '/admin', icon: ShieldIcon, cap: 'user.manage' },
+]
+
 export function AppSidebar({ trainer }: { trainer: Trainer }) {
   return (
     <Sidebar collapsible="icon">
@@ -160,6 +172,19 @@ export function AppSidebar({ trainer }: { trainer: Trainer }) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {/* 管理分组：对非管理员完全隐藏（能力对他是「不存在」） */}
+        {ADMIN.filter((i) => allowed(trainer, i.cap)).length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>管理</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {ADMIN.filter((i) => allowed(trainer, i.cap)).map((item) => (
+                  <NavMenuItem key={item.to} item={item} />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
@@ -174,7 +199,8 @@ export function AppSidebar({ trainer }: { trainer: Trainer }) {
                 <TierBadge tier={trainer.tier} />
               </span>
             </SidebarMenuButton>
-            {trainer.tier !== 'vip' && (
+            {/* 管理员已经拥有一切，不该看到「升级」角标 */}
+            {!allowed(trainer, 'export.share') && (
               <SidebarMenuBadge className="border-primary bg-primary">
                 升级
               </SidebarMenuBadge>

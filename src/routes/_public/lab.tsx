@@ -35,6 +35,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -394,7 +395,10 @@ function LabPage() {
               打开下拉菜单
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>队伍操作</DropdownMenuLabel>
+              {/* Label 是 MenuPrimitive.GroupLabel，必须包在 Group 里 */}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>队伍操作</DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem>查看详情</DropdownMenuItem>
               <DropdownMenuItem>加入队伍</DropdownMenuItem>

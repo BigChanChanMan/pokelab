@@ -32,9 +32,14 @@ VIP 才是它的主题。
 - ❌ 不做对战模拟引擎（伤害计算可以做，完整回合模拟不做）
 - ❌ 不做社区 / 好友 / 聊天
 - ❌ 不对接游戏本体，不读存档
-- ❌ 不做真实支付。VIP 是**权限系统演示**，付费流程用一个假的升级按钮代替
+- ❌ 不做真实支付。VIP 是**权限系统演示**：由管理员授予，或凭**升级码**自助升级
 
 最后一条很重要：一旦引入真实支付，工程量会瞬间盖过权限系统本身，而练手目标就丢了。
+
+_2026-09-21 修订_：原文写的是「付费流程用一个假的升级按钮代替」。那个按钮已经删掉了 ——
+**谁都能点的升级按钮，等于角色不由系统判定**，和「UI 里隐藏按钮不是访问控制」
+是同一个谬误的两面。现在升级有两条真实路径：管理员在后台改等级，或用户输入
+管理员设置的升级码。没有真实支付这件事不变。
 
 ### 与 `pokebrutal` 的关系
 
@@ -63,21 +68,37 @@ VIP 才是它的主题。
 _注意区分_：本文档说「训练家」时，指的是**这个平台上的账号**；
 说「宝可梦」时，指的是**被构筑的对象**。两者绝不能混用 ——
 「训练家的属性」和「宝可梦的属性」是两个完全不同的概念，后者是游戏机制，前者是权限。
+_Avoid_：用户、账号
 
 **访客 (Guest)**
-未登录的访问者。是一个**隐式的训练家**，等级最低。
+**未登录**的访问者。是一个**隐式的训练家**，等级最低。
 _设计约束_：访客不是一个特殊的 UI 分支，而是等级轴上的一档。见 §5。
+_设计约束 2（2026-09-21 修订）_：访客也**不是一个可以被设置成的等级**。
+「有没有会话」和「什么等级」是两件事，不能用一个字段承担 ——
+管理员最低只能把人设到注册训练家。理由见 §5.2。
 
 **注册训练家 (Registered)**
 已登录。有基础配额（队伍数、对战记录数）。
 
 **VIP**
 高级等级。解锁诊断、环境报告、导出等能力。
+来源只有两个：管理员授予，或凭**升级码**自助升级。
+
+**管理员 (Admin)**
+最高等级。拥有 VIP 的全部能力，外加管理用户与升级码。
+_规则_：只能由 seed 产生，界面不可授予 —— 「谁能成为管理员」必须有一条唯一、
+显式的路径。但**可以被降级**，否则它就是一个无法撤销的权限。
+_Avoid_：超管、root
+
+**升级码 (Upgrade code)**
+一段文本，输入它可以把训练家的等级升到 VIP。全局唯一、可重复使用，由管理员设置。
+_规则_：它只回答「能不能升级」；「谁升级了」由训练家自己的等级记录回答。
 
 **等级 (Tier)**
-训练家的权限层级，只有三档：`guest` / `registered` / `vip`。
-_为什么只有三档_：第 4 档（比如「教练」「战队」）在没有真实需求前是纯负担。
-加第 4 档的成本在 §5 的能力模型下约为 5 行代码，所以**不需要现在预留**。
+训练家的权限层级，只有四档：`guest` / `registered` / `vip` / `admin`。
+_为什么只有四档_：第 5 档在没有真实需求前是纯负担。加一档的成本在 §5 的能力模型下
+约为 5 行代码 —— 但**不要低估**：任何硬编码的等级序号都会跟着崩，
+见 `docs/adr/0002-admin-as-fourth-tier.md`。
 
 **能力 (Capability)**
 一个**具体的、可执行的动作**，例如 `team.diagnose`。
@@ -322,15 +343,26 @@ const GUEST: Trainer = { id: null, handle: '访客', tier: 'guest' }
 **访客不是「没有训练家」，而是「等级为 guest 的训练家」。**
 这个区别决定了后面所有代码：不需要到处写 `if (!user)`，只需要问 `can(trainer, cap)`。
 
-### 5.2 三档等级
+### 5.2 四档等级
 
 ```ts
-type Tier = 'guest' | 'registered' | 'vip'
-const TIER_RANK: Record<Tier, number> = { guest: 0, registered: 1, vip: 2 }
+type Tier = 'guest' | 'registered' | 'vip' | 'admin'
+const TIER_RANK: Record<Tier, number> = { guest: 0, registered: 1, vip: 2, admin: 3 }
 ```
 
 用**有序的 rank** 而不是字符串相等判断。这样「VIP 能用的东西注册用户也能用吗」
 这类问题变成一次数字比较，而不是一张需要维护的真值表。
+
+**为什么管理员是第 4 档等级，而不是一个正交的 `isAdmin` 字段** ——
+`tier` + `isAdmin` 两个字段会产生非法组合（VIP 且不是管理员？访客且是管理员？），
+而类型系统抓不住。这正是 §5.3 论证过要避免的形态。完整取舍见
+`docs/adr/0002-admin-as-fourth-tier.md`。
+
+**为什么访客不能被「设置」** —— 管理员最低只能把人设到注册训练家。
+`_console.tsx` 的守卫判的是 `tier === 'guest'`，而登录页会在已登录时把用户送回
+工作台；如果「已登录但等级是访客」成为合法状态，这两条会构成无限重定向。
+根因是它打破了「`tier === guest` ⟺ 没有会话」这个不变式 ——
+「有没有会话」和「什么等级」必须分开，正如不能用 `isVip` 承担三态。
 
 ### 5.3 为什么不做成 `isVip: boolean` ★
 
@@ -364,6 +396,10 @@ export const CAPABILITIES = {
   'export.image':  { minTier: 'vip' },
   'calc.basic':    { minTier: 'guest' },      // 访客也能用 ← 引流
   'dex.browse':    { minTier: 'guest' },
+  // 管理能力。分成两个而不是一个，是为了让「升级码管理」将来能单独授予
+  // （比如客服）。现在两条都要求 admin。
+  'user.manage':   { minTier: 'admin' },
+  'code.manage':   { minTier: 'admin' },
 } as const satisfies Record<string, CapabilitySpec>
 
 export type Capability = keyof typeof CAPABILITIES
@@ -535,6 +571,12 @@ _ponytail: 一条断言，不是一套测试框架。够用。_
 
 所以：`ADVANCED` 分组**永远显示**，锁图标常驻，点进去是 `/pricing`。
 
+_2026-09-21 补充_：`/pricing` 上那个「假升级按钮」已经换成**真实的升级码输入**。
+用户输对了，等级真的变 —— 但它仍然是**管理员发放**的，不是自助购买。
+这条边界必须守住：一旦变成「谁都能点」，VIP 就不再由系统判定，
+而这正是本项目的主题。管理能力（`user.manage`）走的是另一条路 ——
+它对普通训练家**完全隐藏**，因为「管理」对他是「不存在」而不是「等级不够」。
+
 ### 8.3 三种视觉状态
 
 需要区分，否则用户分不清「坏了」和「要钱」：
@@ -557,10 +599,18 @@ _ponytail: 一条断言，不是一套测试框架。够用。_
 ```ts
 // src/db/schema.ts
 export const trainers = sqliteTable('trainers', {
-  id:        text('id').primaryKey(),
-  handle:    text('handle').notNull().unique(),
-  tier:      text('tier').$type<Tier>().notNull().default('registered'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  id:              text('id').primaryKey(),
+  handle:          text('handle').notNull().unique(),   // 训练家名：登录凭据兼展示名
+  passwordHash:    text('password_hash').notNull(),     // scrypt，自描述格式
+  passwordVersion: integer('password_version').notNull().default(1),
+  tier:            text('tier').$type<Tier>().notNull().default('registered'),
+  createdAt:       integer('created_at', { mode: 'timestamp' }).notNull(),
+})
+
+// key/value 设置表。升级码是它目前唯一的用途。
+export const settings = sqliteTable('settings', {
+  key:   text('key').primaryKey(),
+  value: text('value').notNull(),
 })
 
 export const teams = sqliteTable('teams', {
@@ -597,12 +647,25 @@ export const battles = sqliteTable('battles', {
 1. **`teams.trainerId` 可空** —— 支持「访客在本地建的队伍」。§2 的压力测试问的
    就是它注册之后怎么归属。可空是把这个决策**推迟**而不是**回避**：schema 允许
    两种答案，产品决策后回填即可。
+   _2026-09-21 状态_：这个问题**仍然没答**。当前 `server/teams.ts` 的 `trainerId()`
+   直接拒绝无 id 的访客（`FORBIDDEN:no-identity`），等于暂时选了「访客不能存」。
+   `teams` 表本身**还没建** —— 队伍仍在内存桩里，见 §10 阶段 5。
 
 2. **`battles.opponentSnapshot` 是快照** —— 对手队伍被删改后，历史记录不能跟着变。
    这是 §2 里写明的一条领域规则，在 schema 层面兑现。
 
 3. **`members.position` 而不是数组顺序** —— 队伍槽位是领域概念（1–6 号位），
    不是数组下标。用整数列表达，排序稳定且可查询。
+
+4. **`passwordHash` 存自描述的 PHC 风格字符串**（`scrypt$N$r$p$salt$hash`），
+   而不是分开的 `hash` + `salt` 两列。理由：将来调 scrypt 参数或换算法时，
+   老密码仍然能验证，因为参数跟着哈希走。分两列的话，改参数就是一次全表迁移。
+   _2026-09-21 新增_。
+
+5. **`passwordVersion` 是「改密码踢掉旧会话」的实现** —— 会话 cookie 里带着
+   签发时的版本号，与库中比对，不等就当访客。改密码时该列 +1。
+   _2026-09-21 新增_。没有它，改密码只是换了个字符串，已经登录的窃取者毫无影响，
+   功能等于半个假的。
 
 ### 迁移
 
@@ -628,6 +691,28 @@ SQLite 文件本身**不提交**（加进 `.gitignore`），演示数据用 `see
 
 阶段 6 的验收标准值得单独强调：如果换身份实现时需要改动 `getTrainer()` 之外的
 任何文件，说明接缝设计失败了 —— 回头修接缝，而不是继续打补丁。
+
+### 2026-09-21 的状态修订 ★
+
+上面那张表写于项目开始时。**真实情况和它有出入，必须分开说清楚**，
+否则会被误读成「阶段 6 验收失败」。
+
+**阶段 6 的接缝验收：通过。** `getTrainer()` 换实现时，它的三个调用方
+（`_console.tsx` 的守卫、`middleware.ts` 的 `authMiddleware`、`login.tsx` 的 loader）
+**一行未动**。
+
+**但需求变了**，所以其余文件确实有改动 —— 那些改动**不是**来自「换身份实现」：
+
+- 等级从三档扩到四档（管理员），这是新需求
+- 新增注册页、改密码、升级码、管理后台，这些都是新需求
+- `setTier()` 被删除，因为它是「假登录」本身
+
+**阶段 5 只做了一半**：训练家落库了（`trainers` 表 + `settings` 表），
+**队伍仍在内存桩里**。所以现在有一个**混合状态**：重启 dev server 后，
+训练家还在，队伍没了。这是**刻意的**，不是 bug —— 真登录的核心是凭据能被持久
+验证，而队伍重启即失是**这次改动之前就存在**的行为。
+
+`teams` / `members` / `battles` 三张表的 schema 仍以 §9 为准，未建。
 
 ---
 
@@ -750,24 +835,36 @@ pokelab/
 ├── src/
 │   ├── routes/
 │   │   ├── __root.tsx
-│   │   ├── _console.tsx  +  _console/
+│   │   ├── _console.tsx  +  _console/          ← 含 admin.tsx（按能力守的第一个页面）
 │   │   ├── _public.tsx   +  _public/
-│   │   └── login.tsx
+│   │   ├── login.tsx
+│   │   ├── register.tsx                        ← 新增
+│   │   └── pricing.tsx                         ← 升级码入口
 │   ├── components/
 │   │   ├── ui/              ← 从 pokebrutal 整体拷过来
 │   │   ├── app-sidebar.tsx  ← 本项目新增
-│   │   └── console-header.tsx
+│   │   ├── console-header.tsx                  ← 含账号菜单与登出
+│   │   ├── credential-form.tsx                 ← 登录/注册/改密码共用
+│   │   └── site-header.tsx
 │   ├── lib/
 │   │   ├── capabilities.ts  ★
+│   │   ├── credentials.ts   ★ 训练家名/密码校验（前后端共用）
+│   │   ├── errors.ts        ★ 错误码 + 中文映射
+│   │   ├── tiers.ts         ★ 四档等级
 │   │   ├── utils.ts
 │   │   └── type-chart.ts    ← 从 pokebrutal 拷
 │   ├── server/
-│   │   ├── trainer.ts       ★ getTrainer() 单一接缝
-│   │   ├── middleware.ts    ★
-│   │   └── session.ts
+│   │   ├── trainer.ts       ★ getTrainer() 单一接缝（只导出 createServerFn）
+│   │   ├── cookies.ts       ★ 会话写入侧（见下方说明）
+│   │   ├── session.ts       ★ HMAC 签名 / 验签
+│   │   ├── password.ts      ★ scrypt
+│   │   ├── auth.ts          ★ 注册 / 登录 / 登出 / 改密码 / 升级码
+│   │   ├── admin.ts         ★ 用户列表 / 改等级 / 升级码设置
+│   │   └── middleware.ts    ★
 │   ├── db/
 │   │   ├── schema.ts
-│   │   ├── client.ts
+│   │   ├── client.ts        ← 连接缓存在 globalThis（HMR 会重新求值模块）
+│   │   ├── settings.ts
 │   │   └── seed.ts
 │   ├── hooks/
 │   │   └── use-mobile.ts    ← 手写，见坑 2
@@ -775,6 +872,12 @@ pokelab/
 ├── drizzle/                 ← 迁移，提交进 git
 └── styles.css
 ```
+
+_2026-09-21 补充（一个容易踩的坑）_：`server/trainer.ts` 被客户端路由 import，
+所以它**只能导出 `createServerFn`**。一旦导出普通函数，构建期的
+import-protection 就会因为 `react-start/server` 拒绝整个客户端图
+（报错是 `Import denied in client environment`）。写 cookie 的辅助函数因此
+被拆到 `server/cookies.ts`。这是 TanStack Start 特有的一条约束，不是代码风格问题。
 
 `★` 标记的是本项目的核心文件，也是**区别于 `pokebrutal` 的全部所在**。
 
@@ -787,6 +890,11 @@ DATABASE_URL=file:./local.db
 
 `.env` 进 `.gitignore`，`.env.example` 提交。
 
+_2026-09-21 修订_：`DATABASE_URL` 用的是**文件路径**（`./local.db`）而不是
+`file:` URL —— better-sqlite3 要路径，`file:` 前缀是 libsql 的写法。
+另外 `SESSION_SECRET` 缺失时的行为是：**开发环境**用一个固定兜底值并打印警告，
+**生产环境直接启动失败** —— 带着可预测的密钥上线比不启动更糟。
+
 ---
 
 ## 附：这份文档没做什么
@@ -795,6 +903,19 @@ DATABASE_URL=file:./local.db
   应该在阶段 3 开始时定，本文档只负责把问题提准
 - **没给具体页面设计**（布局、组件选用）—— 那是阶段 3 的事
 - **没写支付**—— 已明确划出范围
-- **没建 `CONTEXT.md` / ADR**——§2 的术语还是提案。确认后拆成 `CONTEXT.md`；
-  如果「用能力模型而不是 `isVip`」这个决定落定，它满足 ADR 的三条判据
-  （难逆、外人看了会疑惑、有真实取舍），值得写一条
+- ~~**没建 `CONTEXT.md` / ADR**~~ —— _2026-09-21 已完成_：`CONTEXT.md` 已建立，
+  `docs/adr/0001-capability-model-over-isvip.md` 和
+  `docs/adr/0002-admin-as-fourth-tier.md` 已写。
+
+### 2026-09-21 新增的明确不做
+
+- **邮箱、密码找回、邮箱验证** —— §3 已排除邮件依赖。忘记密码目前没有自助找回，
+  管理员也不能重置（重置密码必然要回答「怎么交付给他」，而那依赖邮件）
+- **管理员建号** —— 给朋友开 VIP 是「他先注册，我再改等级」两步
+- **停用 / 删除训练家** —— 会立刻撞上 §2 那个至今未答的压力测试，
+  而且队伍还在内存里，删账号会留下无法清理的孤儿数据
+- **登录与升级码的限流** —— 演示环境里是纯负担（会被自己锁住），
+  内存计数器重启即清、多实例失效，属于「看着像安全其实不是」
+- **升级码的有效期与「一码一人」** —— 全局单码、可复用。真要收紧时
+  加两列即可，不用换表
+- **「仅开发环境」的等级切换器** —— 与「删掉假登录」直接矛盾

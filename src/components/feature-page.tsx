@@ -51,7 +51,9 @@ export function FeaturePage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button render={<a href="/pricing" />}>去升级</Button>
+          <Button render={<a href="/pricing" />} nativeButton={false}>
+            去升级
+          </Button>
         </CardContent>
       </Card>
     )

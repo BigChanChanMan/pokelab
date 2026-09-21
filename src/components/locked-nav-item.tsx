@@ -46,6 +46,7 @@ export function TierBadge({ tier }: { tier: Tier }) {
     <span
       className={cn(
         'rounded border-2 border-border px-1.5 py-0.5 font-head text-[10px] leading-none tracking-wider',
+        tier === 'admin' && 'bg-primary text-primary-foreground',
         tier === 'vip' && 'bg-primary',
         tier === 'registered' && 'bg-accent',
         tier === 'guest' && 'bg-muted',

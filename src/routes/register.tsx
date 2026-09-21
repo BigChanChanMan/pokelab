@@ -9,27 +9,25 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { login } from '@/server/auth'
+import { register } from '@/server/auth'
 import { getTrainer } from '@/server/trainer'
 
 /**
- * 登录页。**两套壳都不套** —— 它要独占整屏。
+ * 注册页。**两套壳都不套** —— 和登录页同构。
  *
- * 这里曾经是三张身份卡片（选一个等级就进去了）。那是个开发用桩：
- * 等级由访问者自己宣布，不由系统判定 —— 意味着它上面所有的权限判定
- * 都只是装饰。现在换成真表单：凭据 → 查库 → **由系统决定等级**。
+ * 注册是「注册训练家」这一档的**唯一**来源：它不需要任何人授予。
+ * VIP 和管理员各有各的路径（升级码 / 管理员授予 / seed）。
  */
-export const Route = createFileRoute('/login')({
+export const Route = createFileRoute('/register')({
   loader: async () => {
     const trainer = await getTrainer()
-    // 已登录就别再登一次
     if (trainer.id) throw redirect({ to: '/dashboard' })
     return {}
   },
-  component: LoginPage,
+  component: RegisterPage,
 })
 
-function LoginPage() {
+function RegisterPage() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-4 py-10">
       <div className="text-center">
@@ -47,32 +45,27 @@ function LoginPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">登录</CardTitle>
-          <CardDescription>输入训练家名和密码，等级由系统判定。</CardDescription>
+          <CardTitle className="text-lg">注册</CardTitle>
+          <CardDescription>
+            训练家名 2–20 个字，密码至少 8 位。注册即可建队伍、记对战。
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <CredentialForm
-            submitLabel="登录"
-            pendingLabel="登录中…"
-            autoComplete="current-password"
+            submitLabel="注册并进入"
+            pendingLabel="创建中…"
+            autoComplete="new-password"
             onSubmit={async (handle, password) => {
-              await login({ data: { handle, password } })
+              await register({ data: { handle, password } })
               window.location.href = '/dashboard'
             }}
             footer={
-              <div className="space-y-2 pt-1 text-center text-sm">
-                <p>
-                  还没有账号？{' '}
-                  <Link to="/register" className="underline underline-offset-4">
-                    注册一个
-                  </Link>
-                </p>
-                <p className="text-muted-foreground">
-                  <Link to="/pricing" className="underline underline-offset-4">
-                    看看 VIP 多了什么
-                  </Link>
-                </p>
-              </div>
+              <p className="pt-1 text-center text-sm">
+                已经有账号了？{' '}
+                <Link to="/login" className="underline underline-offset-4">
+                  去登录
+                </Link>
+              </p>
             }
           />
         </CardContent>
