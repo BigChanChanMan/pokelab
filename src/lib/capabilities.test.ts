@@ -15,8 +15,20 @@ describe('can()', () => {
     ['registered', 'team.create', true],
     ['registered', 'team.diagnose', false],
     ['vip', 'team.diagnose', true],
+    // admin 是第 4 档。这几条固化「等级是阶梯」在最高档同样成立。
+    ['admin', 'team.diagnose', true],
+    ['admin', 'user.manage', true],
+    ['admin', 'code.manage', true],
+    // ★ 最值钱的一条：VIP 拿不到管理能力。
+    // 它防止后来者把 admin 偷偷当成一个独立的布尔开关用。
+    ['vip', 'user.manage', false],
+    ['registered', 'user.manage', false],
   ])('%s 使用 %s → %s', (tier, cap, expected) => {
     expect(can(trainer(tier), cap).allowed).toBe(expected)
+  })
+
+  it('管理员不限量', () => {
+    expect(can(trainer('admin'), 'team.create', { used: 999 }).allowed).toBe(true)
   })
 
   it('拒绝时给出等级缺口，UI 才能引导升级', () => {

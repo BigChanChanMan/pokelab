@@ -13,6 +13,8 @@ import { Route as ConsoleRouteImport } from './routes/_console'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ConsoleAdminRouteImport } from './routes/_console/admin'
 import { Route as ConsoleBattlesRouteImport } from './routes/_console/battles'
 import { Route as ConsoleCalcRouteImport } from './routes/_console/calc'
 import { Route as ConsoleDashboardRouteImport } from './routes/_console/dashboard'
@@ -45,6 +47,16 @@ const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsoleAdminRoute = ConsoleAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => ConsoleRoute,
 } as any)
 const ConsoleBattlesRoute = ConsoleBattlesRouteImport.update({
   id: '/battles',
@@ -121,6 +133,8 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/register': typeof RegisterRoute
+  '/admin': typeof ConsoleAdminRoute
   '/battles': typeof ConsoleBattlesRoute
   '/calc': typeof ConsoleCalcRoute
   '/dashboard': typeof ConsoleDashboardRoute
@@ -139,6 +153,8 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/register': typeof RegisterRoute
+  '/admin': typeof ConsoleAdminRoute
   '/battles': typeof ConsoleBattlesRoute
   '/calc': typeof ConsoleCalcRoute
   '/dashboard': typeof ConsoleDashboardRoute
@@ -159,6 +175,8 @@ export interface FileRoutesById {
   '/_public': typeof PublicRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/register': typeof RegisterRoute
+  '/_console/admin': typeof ConsoleAdminRoute
   '/_console/battles': typeof ConsoleBattlesRoute
   '/_console/calc': typeof ConsoleCalcRoute
   '/_console/dashboard': typeof ConsoleDashboardRoute
@@ -180,6 +198,8 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pricing'
+    | '/register'
+    | '/admin'
     | '/battles'
     | '/calc'
     | '/dashboard'
@@ -198,6 +218,8 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pricing'
+    | '/register'
+    | '/admin'
     | '/battles'
     | '/calc'
     | '/dashboard'
@@ -217,6 +239,8 @@ export interface FileRouteTypes {
     | '/_public'
     | '/login'
     | '/pricing'
+    | '/register'
+    | '/_console/admin'
     | '/_console/battles'
     | '/_console/calc'
     | '/_console/dashboard'
@@ -238,6 +262,7 @@ export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
+  RegisterRoute: typeof RegisterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -269,6 +294,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_console/admin': {
+      id: '/_console/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof ConsoleAdminRouteImport
+      parentRoute: typeof ConsoleRoute
     }
     '/_console/battles': {
       id: '/_console/battles'
@@ -372,6 +411,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface ConsoleRouteChildren {
+  ConsoleAdminRoute: typeof ConsoleAdminRoute
   ConsoleBattlesRoute: typeof ConsoleBattlesRoute
   ConsoleCalcRoute: typeof ConsoleCalcRoute
   ConsoleDashboardRoute: typeof ConsoleDashboardRoute
@@ -383,6 +423,7 @@ interface ConsoleRouteChildren {
 }
 
 const ConsoleRouteChildren: ConsoleRouteChildren = {
+  ConsoleAdminRoute: ConsoleAdminRoute,
   ConsoleBattlesRoute: ConsoleBattlesRoute,
   ConsoleCalcRoute: ConsoleCalcRoute,
   ConsoleDashboardRoute: ConsoleDashboardRoute,
@@ -422,6 +463,7 @@ const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
+  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -3,6 +3,7 @@ import { MoonIcon, SunIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { TIER_LABEL, type Trainer } from '@/lib/tiers'
 import { cn } from '@/lib/utils'
 
 const NAV = [
@@ -12,7 +13,7 @@ const NAV = [
   { to: '/guide', label: '搭建手册' },
 ] as const
 
-export function SiteHeader() {
+export function SiteHeader({ trainer }: { trainer: Trainer }) {
   const [dark, setDark] = useState(false)
 
   // 暗色模式：给 <html> 加 .dark 类，配合 styles.css 里的 .dark 变量块
@@ -28,7 +29,7 @@ export function SiteHeader() {
             ⚡
           </span>
           <span className="font-head text-lg leading-none tracking-tight sm:text-xl">
-            POKÉ<span className="bg-primary px-1">BRUTAL</span>
+            POKÉ<span className="bg-primary px-1">LAB</span>
           </span>
         </Link>
 
@@ -48,15 +49,43 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Button
-          variant="outline"
-          size="icon"
-          className="ml-auto md:ml-2"
-          aria-label={dark ? '切换到浅色模式' : '切换到深色模式'}
-          onClick={() => setDark((v) => !v)}
-        >
-          {dark ? <SunIcon /> : <MoonIcon />}
-        </Button>
+        <div className="ml-auto flex items-center gap-2 md:ml-2">
+          {/* 公开页之前点不到 /login —— 这是一条断头路，现在补上入口 */}
+          {trainer.id ? (
+            <Button
+              variant="outline"
+              render={<Link to="/dashboard" />}
+              nativeButton={false}
+            >
+              <span className="max-w-24 truncate">{trainer.handle}</span>
+              <span className="text-muted-foreground">
+                {TIER_LABEL[trainer.tier]}
+              </span>
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                render={<Link to="/login" />}
+                nativeButton={false}
+              >
+                登录
+              </Button>
+              <Button render={<Link to="/register" />} nativeButton={false}>
+                注册
+              </Button>
+            </>
+          )}
+
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={dark ? '切换到浅色模式' : '切换到深色模式'}
+            onClick={() => setDark((v) => !v)}
+          >
+            {dark ? <SunIcon /> : <MoonIcon />}
+          </Button>
+        </div>
       </div>
 
       {/* 移动端导航 */}

@@ -36,4 +36,27 @@ describe('enforceCapability() —— UI 之外的那道防线', () => {
       expect(() => enforceCapability(trainer('vip'), cap)).not.toThrow()
     }
   })
+
+  it('注册训练家直接调 user.manage → 抛 FORBIDDEN', () => {
+    expect(() => enforceCapability(trainer('registered'), 'user.manage')).toThrow(
+      'FORBIDDEN:user.manage:tier',
+    )
+  })
+
+  it('VIP 也拿不到管理能力', () => {
+    expect(() => enforceCapability(trainer('vip'), 'user.manage')).toThrow(
+      'FORBIDDEN:user.manage:tier',
+    )
+  })
+
+  it('管理员拿到管理能力，且仍有 VIP 的全部能力', () => {
+    for (const cap of [
+      'user.manage',
+      'code.manage',
+      'team.diagnose',
+      'team.create',
+    ] as const) {
+      expect(() => enforceCapability(trainer('admin'), cap)).not.toThrow()
+    }
+  })
 })

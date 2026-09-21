@@ -32,6 +32,9 @@ export const CAPABILITIES = {
   'team.diagnose': { minTier: 'vip' },
   'meta.report': { minTier: 'vip' },
   'export.share': { minTier: 'vip' },
+  // 分成两个而不是一个，是为了让「升级码管理」将来能单独授予（比如客服）。
+  'user.manage': { minTier: 'admin' },
+  'code.manage': { minTier: 'admin' },
 } as const satisfies Record<string, CapabilitySpec>
 
 export type Capability = keyof typeof CAPABILITIES
