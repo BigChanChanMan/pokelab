@@ -879,6 +879,35 @@ import-protection 就会因为 `react-start/server` 拒绝整个客户端图
 （报错是 `Import denied in client environment`）。写 cookie 的辅助函数因此
 被拆到 `server/cookies.ts`。这是 TanStack Start 特有的一条约束，不是代码风格问题。
 
+### 2026-09-21 新增：每日一抽（DailyDraw）
+
+从 `docs/nami` 的 PRD 与原型接入的第二个 VIP 功能。**完整取舍见
+`docs/adr/0003-dailydraw-server-side.md`**，这里只记落点。
+
+| 落点 | 是什么 |
+|---|---|
+| `lib/gacha.ts` | 抽卡内核。纯函数，**不接受 trainerId** —— 结果是日期的纯函数 |
+| `data/card-pool.ts` | 599 张卡池，构建期产物（`scripts/build-card-pool.mjs` 生成） |
+| `db/schema.ts` | `gacha_draws` —— 本仓库**第一张业务数据表** |
+| `server/gacha.ts` | `readRates` / `readAlbum` / `drawToday` |
+| `routes/_console/gacha/*` | 主界面 / 抽卡册 / 概率公示 |
+
+三条值得单独记住的：
+
+1. **客户端永远不传日期。** 「今天」由服务端按 `Asia/Shanghai` 算
+   （`todayInTimeZone()`），客户端从响应里读 `today`。所以「VIP 传一串历史日期
+   刷满抽卡册」不是被校验挡住，而是**不存在**。
+2. **抽卡结果不可作弊，抽卡册才是要强制的资产。** 种子不含任何用户信息，
+   改本地代码也改不了今天抽什么；服务端强制保护的是「我哪天抽过」这个记录。
+   别把这两件事混起来。
+3. **能力拆两个**：`gacha.draw`（VIP）/ `gacha.album`（注册即可）。
+   降级的 VIP 仍然打得开自己的册子（§6.4 降级不删数据）。
+
+`data/card-pool.ts` 是**快照**：卡池一变，历史记录的重算结果会跟着变。
+`lib/gacha.ts` 的 `SEED_VERSION` 就是为这件事准备的。
+
+---
+
 `★` 标记的是本项目的核心文件，也是**区别于 `pokebrutal` 的全部所在**。
 
 ### 环境变量
@@ -906,6 +935,15 @@ _2026-09-21 修订_：`DATABASE_URL` 用的是**文件路径**（`./local.db`）
 - ~~**没建 `CONTEXT.md` / ADR**~~ —— _2026-09-21 已完成_：`CONTEXT.md` 已建立，
   `docs/adr/0001-capability-model-over-isvip.md` 和
   `docs/adr/0002-admin-as-fourth-tier.md` 已写。
+
+### 2026-09-21 新增的明确不做（每日一抽）
+
+- **卡片详情弹层（PRD M5）** —— 要打 TCGdex 实时接口，而那个接口实测
+  0.9–5.5s 延迟，是个独立的小工程。卡池里已经留了 `id`，随时能加。
+- **分享图 / 年度回顾 / 成就系统（PRD M6）** —— PRD 自己标 P2。
+- **扩充卡池** —— 沿用原型内联的 599 张（UR 只有 6 张）。按公示的 333 天期望
+  间隔，同一张 UR 重复要等约 2000 天，够用。真要扩时照 PRD §8.1 写采集脚本。
+- **多时区** —— 「今天」固定东八区。要真做多时区，得先重新定义「全球同卡」。
 
 ### 2026-09-21 新增的明确不做
 
