@@ -1,14 +1,17 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import {
   ActivityIcon,
+  AlbumIcon,
   BookOpenIcon,
   CalculatorIcon,
   ChartBarIcon,
   FlaskConicalIcon,
   LayoutDashboardIcon,
   LockIcon,
+  ScaleIcon,
   ShareIcon,
   ShieldIcon,
+  SparklesIcon,
   SwordsIcon,
   UsersIcon,
 } from 'lucide-react'
@@ -117,6 +120,34 @@ const ADMIN: NavItem[] = [
   { label: '管理', to: '/admin', icon: ShieldIcon, cap: 'user.manage' },
 ]
 
+/**
+ * 每日一抽。**这个分组和普通分组、ADVANCED 分组都不同** ——
+ * 它内部一分为二：
+ *
+ *   - 「今日卡包」走 `gacha.draw`（VIP）→ 锁定时显示锁 + 引导
+ *   - 「抽卡册」走 `gacha.album`（注册即可）→ **降级之后依然可达**
+ *
+ * 这是 DESIGN.md §6.4「降级不删数据」在导航上的样子：册子里的东西是训练家的
+ * 资产，等级只影响「能不能再抽」，不影响「能不能看」。
+ * 所以锁定项的后面还有半扇开着的门，而不是一堵墙。
+ */
+const GACHA: NavItem[] = [
+  { label: '今日卡包', to: '/gacha', icon: SparklesIcon, cap: 'gacha.draw' },
+  { label: '抽卡册', to: '/gacha/album', icon: AlbumIcon, cap: 'gacha.album' },
+]
+
+/**
+ * 概率公示。**永远显示、永远不锁** —— 它不含特权数据，
+ * 而且是最好的升级广告：看到概率表和保底进度，才知道自己错过了什么。
+ * PRD §4.4 也把它定成不该隐藏的页面。
+ */
+const RATES: NavItem = {
+  label: '概率公示',
+  to: '/gacha/rates',
+  icon: ScaleIcon,
+  cap: 'gacha.album',
+}
+
 export function AppSidebar({ trainer }: { trainer: Trainer }) {
   return (
     <Sidebar collapsible="icon">
@@ -155,6 +186,23 @@ export function AppSidebar({ trainer }: { trainer: Trainer }) {
             </SidebarGroup>
           )
         })}
+
+        {/* 每日一抽：一锁一半开，见上方 GACHA 的注释 */}
+        <SidebarGroup>
+          <SidebarGroupLabel>每日一抽</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {GACHA.map((item) =>
+                allowed(trainer, item.cap) ? (
+                  <NavMenuItem key={item.to} item={item} />
+                ) : (
+                  <LockedMenuItem key={item.to} item={item} />
+                ),
+              )}
+              <NavMenuItem item={RATES} />
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         {/* VIP 分区：永远显示，锁图标常驻 */}
         <SidebarGroup>

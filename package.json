@@ -14,7 +14,9 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "build:pool": "node scripts/build-card-pool.mjs",
+    "e2e:gacha": "node scripts/e2e-gacha.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

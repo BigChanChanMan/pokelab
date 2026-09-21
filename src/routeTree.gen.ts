@@ -27,6 +27,9 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicGuideRouteImport } from './routes/_public/guide'
 import { Route as PublicLabRouteImport } from './routes/_public/lab'
 import { Route as PublicMatchupRouteImport } from './routes/_public/matchup'
+import { Route as ConsoleGachaIndexRouteImport } from './routes/_console/gacha/index'
+import { Route as ConsoleGachaAlbumRouteImport } from './routes/_console/gacha/album'
+import { Route as ConsoleGachaRatesRouteImport } from './routes/_console/gacha/rates'
 import { Route as PublicDexIndexRouteImport } from './routes/_public/dex/index'
 import { Route as PublicDexIdRouteImport } from './routes/_public/dex/$id'
 
@@ -118,6 +121,21 @@ const PublicMatchupRoute = PublicMatchupRouteImport.update({
   path: '/matchup',
   getParentRoute: () => PublicRoute,
 } as any)
+const ConsoleGachaIndexRoute = ConsoleGachaIndexRouteImport.update({
+  id: '/gacha/',
+  path: '/gacha/',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleGachaAlbumRoute = ConsoleGachaAlbumRouteImport.update({
+  id: '/gacha/album',
+  path: '/gacha/album',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleGachaRatesRoute = ConsoleGachaRatesRouteImport.update({
+  id: '/gacha/rates',
+  path: '/gacha/rates',
+  getParentRoute: () => ConsoleRoute,
+} as any)
 const PublicDexIndexRoute = PublicDexIndexRouteImport.update({
   id: '/dex/',
   path: '/dex/',
@@ -146,7 +164,10 @@ export interface FileRoutesByFullPath {
   '/guide': typeof PublicGuideRoute
   '/lab': typeof PublicLabRoute
   '/matchup': typeof PublicMatchupRoute
+  '/gacha/album': typeof ConsoleGachaAlbumRoute
+  '/gacha/rates': typeof ConsoleGachaRatesRoute
   '/dex/$id': typeof PublicDexIdRoute
+  '/gacha/': typeof ConsoleGachaIndexRoute
   '/dex/': typeof PublicDexIndexRoute
 }
 export interface FileRoutesByTo {
@@ -166,7 +187,10 @@ export interface FileRoutesByTo {
   '/guide': typeof PublicGuideRoute
   '/lab': typeof PublicLabRoute
   '/matchup': typeof PublicMatchupRoute
+  '/gacha/album': typeof ConsoleGachaAlbumRoute
+  '/gacha/rates': typeof ConsoleGachaRatesRoute
   '/dex/$id': typeof PublicDexIdRoute
+  '/gacha': typeof ConsoleGachaIndexRoute
   '/dex': typeof PublicDexIndexRoute
 }
 export interface FileRoutesById {
@@ -189,7 +213,10 @@ export interface FileRoutesById {
   '/_public/lab': typeof PublicLabRoute
   '/_public/matchup': typeof PublicMatchupRoute
   '/_public/': typeof PublicIndexRoute
+  '/_console/gacha/album': typeof ConsoleGachaAlbumRoute
+  '/_console/gacha/rates': typeof ConsoleGachaRatesRoute
   '/_public/dex/$id': typeof PublicDexIdRoute
+  '/_console/gacha/': typeof ConsoleGachaIndexRoute
   '/_public/dex/': typeof PublicDexIndexRoute
 }
 export interface FileRouteTypes {
@@ -211,7 +238,10 @@ export interface FileRouteTypes {
     | '/guide'
     | '/lab'
     | '/matchup'
+    | '/gacha/album'
+    | '/gacha/rates'
     | '/dex/$id'
+    | '/gacha/'
     | '/dex/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -231,7 +261,10 @@ export interface FileRouteTypes {
     | '/guide'
     | '/lab'
     | '/matchup'
+    | '/gacha/album'
+    | '/gacha/rates'
     | '/dex/$id'
+    | '/gacha'
     | '/dex'
   id:
     | '__root__'
@@ -253,7 +286,10 @@ export interface FileRouteTypes {
     | '/_public/lab'
     | '/_public/matchup'
     | '/_public/'
+    | '/_console/gacha/album'
+    | '/_console/gacha/rates'
     | '/_public/dex/$id'
+    | '/_console/gacha/'
     | '/_public/dex/'
   fileRoutesById: FileRoutesById
 }
@@ -393,6 +429,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicMatchupRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_console/gacha/': {
+      id: '/_console/gacha/'
+      path: '/gacha'
+      fullPath: '/gacha/'
+      preLoaderRoute: typeof ConsoleGachaIndexRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/gacha/album': {
+      id: '/_console/gacha/album'
+      path: '/gacha/album'
+      fullPath: '/gacha/album'
+      preLoaderRoute: typeof ConsoleGachaAlbumRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/gacha/rates': {
+      id: '/_console/gacha/rates'
+      path: '/gacha/rates'
+      fullPath: '/gacha/rates'
+      preLoaderRoute: typeof ConsoleGachaRatesRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
     '/_public/dex/': {
       id: '/_public/dex/'
       path: '/dex'
@@ -420,6 +477,9 @@ interface ConsoleRouteChildren {
   ConsoleMetaRoute: typeof ConsoleMetaRoute
   ConsoleSettingsRoute: typeof ConsoleSettingsRoute
   ConsoleTeamsRoute: typeof ConsoleTeamsRoute
+  ConsoleGachaAlbumRoute: typeof ConsoleGachaAlbumRoute
+  ConsoleGachaRatesRoute: typeof ConsoleGachaRatesRoute
+  ConsoleGachaIndexRoute: typeof ConsoleGachaIndexRoute
 }
 
 const ConsoleRouteChildren: ConsoleRouteChildren = {
@@ -432,6 +492,9 @@ const ConsoleRouteChildren: ConsoleRouteChildren = {
   ConsoleMetaRoute: ConsoleMetaRoute,
   ConsoleSettingsRoute: ConsoleSettingsRoute,
   ConsoleTeamsRoute: ConsoleTeamsRoute,
+  ConsoleGachaAlbumRoute: ConsoleGachaAlbumRoute,
+  ConsoleGachaRatesRoute: ConsoleGachaRatesRoute,
+  ConsoleGachaIndexRoute: ConsoleGachaIndexRoute,
 }
 
 const ConsoleRouteWithChildren =

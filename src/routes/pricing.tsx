@@ -117,7 +117,7 @@ function Pricing() {
               你已是{TIER_LABEL[tier]}
             </CardTitle>
             <CardDescription>
-              队伍诊断、环境报告、导出分享都已解锁。
+              队伍诊断、环境报告、导出分享、每日一抽都已解锁。
             </CardDescription>
           </CardHeader>
           <CardContent>

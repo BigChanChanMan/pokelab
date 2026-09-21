@@ -122,6 +122,15 @@ export function SiteFooter() {
           >
             PokeAPI
           </a>
+          ，卡牌数据来自{' '}
+          <a
+            className="underline decoration-2 underline-offset-2"
+            href="https://tcgdex.dev"
+            target="_blank"
+            rel="noreferrer"
+          >
+            TCGdex
+          </a>
           ，组件来自{' '}
           <a
             className="underline decoration-2 underline-offset-2"

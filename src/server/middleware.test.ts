@@ -43,6 +43,16 @@ describe('enforceCapability() —— UI 之外的那道防线', () => {
     )
   })
 
+  it('注册训练家直接调抽卡 → 抛 FORBIDDEN（每日一抽是 VIP 能力）', () => {
+    expect(() => enforceCapability(trainer('registered'), 'gacha.draw')).toThrow(
+      'FORBIDDEN:gacha.draw:tier',
+    )
+  })
+
+  it('但注册训练家看自己的抽卡册是放行的 —— 降级不封数据', () => {
+    expect(() => enforceCapability(trainer('registered'), 'gacha.album')).not.toThrow()
+  })
+
   it('VIP 也拿不到管理能力', () => {
     expect(() => enforceCapability(trainer('vip'), 'user.manage')).toThrow(
       'FORBIDDEN:user.manage:tier',

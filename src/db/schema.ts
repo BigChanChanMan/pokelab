@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 import type { Tier } from '@/lib/tiers'
 
@@ -37,5 +37,39 @@ export const settings = sqliteTable('settings', {
 })
 
 export const UPGRADE_CODE_KEY = 'upgrade_code'
+
+/**
+ * 抽卡记录 —— 本仓库**第一张业务数据表**（`teams`/`members`/`battles` 至今未建）。
+ *
+ * 为什么只存「谁在哪天抽过」，不存卡片快照（推翻 PRD §9 的 `DrawRecord`）：
+ *
+ *   1. 抽卡是**日期的纯函数**（CONTEXT.md「抽卡」）。卡片、档位、是否保底
+ *      全部能从 `date` 重算，存下来就是冗余。
+ *   2. 存快照会引入一类脏数据：「库里的 tier」和「按日期重算的 tier」不一致。
+ *      这种不一致没有正确答案，只有一堆 if。
+ *   3. 连续天数、重复计数、档位分布**全部由这一张表推导**，不需要额外字段。
+ *      PRD 存了 `streak`，那是冗余，还会因为断签逻辑写错而悄悄漂移。
+ *
+ * `seedVersion` 是必须的：它记录这一行是**哪一版规则**算出来的。
+ * 调整概率模型或卡池时，新规则从切换日生效，历史记录仍按旧版本重算
+ * —— 没有它，历史会和「按今天规则重算」的结果对不上（PRD §5.1）。
+ */
+export const gachaDraws = sqliteTable(
+  'gacha_draws',
+  {
+    trainerId: text('trainer_id')
+      .references(() => trainers.id, { onDelete: 'cascade' })
+      .notNull(),
+    /** 东八区的 YYYY-MM-DD。服务端算，客户端传什么都不采信（lib/gacha.ts）。 */
+    date: text('date').notNull(),
+    seedVersion: text('seed_version').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  },
+  (t) => [
+    // 复合主键 = 「一个训练家一天只能有一行」。每日一抽这条领域规则
+    // 落在 schema 上，而不是靠应用层记得去查重。
+    primaryKey({ columns: [t.trainerId, t.date] }),
+  ],
+)
 
 export type TrainerRow = typeof trainers.$inferSelect

@@ -27,6 +27,7 @@ const MESSAGES: Record<string, string> = {
   [ERR.WRONG_PASSWORD]: '当前密码不正确',
   [ERR.CODE_INVALID]: '升级码不正确',
   'FORBIDDEN:no-identity': '请先登录',
+  'GACHA_ALREADY_DRAWN': '今天已经抽过了，明天再来',
 }
 
 /** 把服务端抛出的错误翻成给用户看的一句话。认不出来的一律给通用文案。 */

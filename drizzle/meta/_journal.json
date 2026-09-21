@@ -8,6 +8,13 @@
       "when": 1789891791568,
       "tag": "0000_long_shinobi_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789961115816,
+      "tag": "0001_dashing_inertia",
+      "breakpoints": true
     }
   ]
 }

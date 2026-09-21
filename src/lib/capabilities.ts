@@ -32,6 +32,16 @@ export const CAPABILITIES = {
   'team.diagnose': { minTier: 'vip' },
   'meta.report': { minTier: 'vip' },
   'export.share': { minTier: 'vip' },
+  /**
+   * 每日一抽拆成两个能力，是为了让**降级不封数据**（DESIGN.md §6.4）。
+   *
+   * 抽卡册里的东西是训练家的资产 —— 他抽到过的卡。降级之后如果连册子都打不开，
+   * 那就是「降级删数据」的软版本。所以抽卡要 VIP，看自己的册子只要注册。
+   *
+   * 这也让锁定的「今日卡包」后面还有半扇开着的门，而不是一堵墙。
+   */
+  'gacha.draw': { minTier: 'vip' },
+  'gacha.album': { minTier: 'registered' },
   // 分成两个而不是一个，是为了让「升级码管理」将来能单独授予（比如客服）。
   'user.manage': { minTier: 'admin' },
   'code.manage': { minTier: 'admin' },
