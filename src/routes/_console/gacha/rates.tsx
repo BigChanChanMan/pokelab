@@ -20,7 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { CARD_BUCKETS } from '@/data/card-pool'
-import { RARITY_LABEL, drawFor, type CardRarity } from '@/lib/gacha'
+import { RARITY_LABEL, drawFor, percentOf, type CardRarity } from '@/lib/gacha'
 import { readRates } from '@/server/gacha'
 
 /**
@@ -63,7 +63,7 @@ function RatesPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {RARITIES.map((tier) => {
-            const w = rates.weights[tier] * 100
+            const w = percentOf(rates.weights[tier])
             return (
               <div key={tier} className="space-y-1">
                 <div className="flex items-baseline justify-between text-xs">

@@ -44,6 +44,17 @@ export const RARITY_WEIGHTS: Record<CardRarity, number> = {
   UR: 0.003,
 }
 
+/**
+ * 权重 → 直接能印的百分比数字。
+ *
+ * 不能直接 `weight * 100`：`0.28 * 100` 是 `28.000000000000004`，浮点误差会
+ * 原样出现在页面上。保留一位小数再去掉尾零，得到 **60 / 28 / 9 / 2.7 / 0.3**
+ * —— 正是 PRD 和概率公示页的写法。
+ */
+export function percentOf(weight: number): number {
+  return Number((weight * 100).toFixed(1))
+}
+
 const RARITIES: readonly CardRarity[] = ['N', 'R', 'SR', 'SSR', 'UR']
 
 /**

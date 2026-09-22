@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress'
 import {
   RARITY_LABEL,
   RARITY_WEIGHTS,
+  percentOf,
   type CardRarity,
 } from '@/lib/gacha'
 import { readAlbum } from '@/server/gacha'
@@ -105,7 +106,7 @@ function AlbumPage() {
       {/* 时间线 */}
       <div>
         <h3 className="mb-3 font-head text-lg">历史记录</h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
           {timeline.map((d) => (
             <div key={d.date} className="space-y-1.5">
               <CardFace image={d.card.image} name={d.card.name} tier={d.tier} />
@@ -174,7 +175,7 @@ function DistributionRow({
   total: number
 }) {
   const actual = total ? (count / total) * 100 : 0
-  const expected = RARITY_WEIGHTS[tier] * 100
+  const expected = percentOf(RARITY_WEIGHTS[tier])
   return (
     <div className="space-y-1">
       <div className="flex items-baseline justify-between text-xs">
