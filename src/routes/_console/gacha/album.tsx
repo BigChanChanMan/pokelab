@@ -106,7 +106,7 @@ function AlbumPage() {
       {/* 时间线 */}
       <div>
         <h3 className="mb-3 font-head text-lg">历史记录</h3>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+        <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 lg:grid-cols-8">
           {timeline.map((d) => (
             <div key={d.date} className="space-y-1.5">
               <CardFace image={d.card.image} name={d.card.name} tier={d.tier} />
