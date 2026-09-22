@@ -225,7 +225,7 @@ function AdminPage() {
                 // 界面既然造不出管理员，也不该能销毁它。服务端也拒绝。
                 const undeletable = row.tier === 'admin'
                 return (
-                  <TableRow key={row.id}>
+                  <TableRow key={row.id} className="even:bg-muted/50">
                     <TableCell className="font-head">
                       {row.handle}
                       {isSelf && (
