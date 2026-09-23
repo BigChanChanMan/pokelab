@@ -40,6 +40,13 @@ export const Route = createFileRoute('/_console/gacha/')({
 /** 翻牌动画的第一段：卡背脉冲 → 白光（PRD §P1-02，脉冲 300 → 白光 200） */
 const FLASH_MS = 320
 
+/**
+ * 卡背图。**外链**到宝可梦官方的素材 CDN，没有本地副本 —— 这份资源是他们的，
+ * 拷进仓库就是再分发，而热链只是展示（和卡图走 TCGdex 一个道理）。
+ * 代价是路径不保证稳定，所以按钮上留了黄底 + 「?」作兜底。
+ */
+const CARD_BACK = 'https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg'
+
 function GachaPage() {
   const { trainer } = Route.useRouteContext()
   const initial = Route.useLoaderData().album
@@ -156,9 +163,29 @@ function Stage({
               onClick={onDraw}
               disabled={busy}
               aria-label="开启今日卡包"
-              className="grid aspect-[245/342] w-full place-items-center border-2 border-border bg-primary text-primary-foreground disabled:opacity-60"
+              className="relative grid aspect-[245/342] w-full place-items-center border-2 border-border bg-primary text-primary-foreground disabled:opacity-60"
             >
+              {/* 卡背的兜底：这张图是**外链**（宝可梦官方的素材 CDN），
+                  路径无版本、随时可能变，所以黄色底 + 「?」始终垫在下面。
+                  图能加载就盖住它，加载不出来就退回现在这个样子 ——
+                  不至于变成一个点得动但什么都没有的空框。 */}
               <span className="font-head text-6xl">?</span>
+              <img
+                src={CARD_BACK}
+                alt=""
+                className="absolute inset-0 size-full object-cover"
+                ref={(el) => {
+                  // SSR 下图片在 HTML 解析阶段就开始加载 —— 如果那时就失败，
+                  // error 事件会在 React 完成 hydration、挂上 onError 之前触发，
+                  // 于是处理器永远不会跑，破图图标留在角上。这里补一次挂载检查。
+                  if (el?.complete && el.naturalWidth === 0) {
+                    el.style.display = 'none'
+                  }
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
             </button>
           </TiltCard>
         )}
